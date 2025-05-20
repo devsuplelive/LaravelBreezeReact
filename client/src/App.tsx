@@ -65,10 +65,10 @@ function App() {
       <Switch>
         {/* Auth routes */}
         <Route path="/login">
-          {isAuthenticated ? () => (window.location.href = "/", null) : Login}
+          <Login />
         </Route>
         <Route path="/register">
-          {isAuthenticated ? () => (window.location.href = "/", null) : Register}
+          <Register />
         </Route>
 
         {/* Protected routes wrapped in AppLayout */}
