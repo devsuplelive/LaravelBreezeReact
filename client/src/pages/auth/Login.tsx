@@ -35,8 +35,10 @@ export default function Login() {
       setLoading(true);
       setError(null);
       await login(data.username, data.password);
-      // Redirect will be handled by App.tsx after auth state changes
+      // Após o login, redirecione manualmente para a página inicial
+      window.location.href = "/";
     } catch (err: any) {
+      console.error("Login error:", err);
       setError(err.message || "Failed to login. Please check your credentials.");
     } finally {
       setLoading(false);
