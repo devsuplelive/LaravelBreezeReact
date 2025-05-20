@@ -283,22 +283,9 @@ export default function Dashboard() {
               <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">Top Selling Products</h3>
             </div>
             <div className="p-6">
-              {productsLoading ? (
-                <div className="space-y-4">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="flex">
-                      <Skeleton className="h-16 w-16 rounded-md" />
-                      <div className="ml-4 flex-1 space-y-2">
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-2/3" />
-                        <Skeleton className="h-2 w-full" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : productsError ? (
+              {productsError || topProducts?.length === 0 ? (
                 <div className="py-8 text-center text-gray-500 dark:text-gray-400">
-                  Não foi possível carregar os dados de produtos no momento
+                  Não há dados de produtos disponíveis no momento
                 </div>
               ) : topProducts?.length > 0 ? (
                 <ul className="divide-y divide-gray-200 dark:divide-gray-700">
