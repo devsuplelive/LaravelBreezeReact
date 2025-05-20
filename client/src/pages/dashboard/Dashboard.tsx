@@ -22,23 +22,27 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
 
   // Fetch dashboard stats
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats = { customers: 0, products: 0, orders: 0, revenue: 0 }, isLoading: statsLoading } = useQuery({
     queryKey: ['/api/dashboard/stats'],
+    retry: 1
   });
 
   // Fetch recent orders
-  const { data: recentOrders, isLoading: ordersLoading } = useQuery({
+  const { data: recentOrders = [], isLoading: ordersLoading } = useQuery({
     queryKey: ['/api/dashboard/recent-orders'],
+    retry: 1
   });
 
   // Fetch top products
-  const { data: topProducts, isLoading: productsLoading } = useQuery({
+  const { data: topProducts = [], isLoading: productsLoading, isError: productsError } = useQuery({
     queryKey: ['/api/dashboard/top-products'],
+    retry: 1
   });
 
   // Fetch sales by category
-  const { data: salesByCategory, isLoading: categoriesLoading } = useQuery({
+  const { data: salesByCategory = [], isLoading: categoriesLoading, isError: categoriesError } = useQuery({
     queryKey: ['/api/dashboard/sales-by-category'],
+    retry: 1
   });
 
   return (
@@ -307,6 +311,10 @@ export default function Dashboard() {
                       </div>
                     </div>
                   ))}
+                </div>
+              ) : productsError ? (
+                <div className="py-8 text-center text-gray-500 dark:text-gray-400">
+                  Não foi possível carregar os dados de produtos no momento
                 </div>
               ) : topProducts?.length > 0 ? (
                 <ul className="divide-y divide-gray-200 dark:divide-gray-700">
