@@ -21,29 +21,19 @@ const ChartPlaceholder = () => (
 export default function Dashboard() {
   const [, setLocation] = useLocation();
 
-  // Fetch dashboard stats
-  const { data: stats = { customers: 0, products: 0, orders: 0, revenue: 0 }, isLoading: statsLoading } = useQuery({
-    queryKey: ['/api/dashboard/stats'],
-    retry: 1
-  });
-
-  // Fetch recent orders
-  const { data: recentOrders = [], isLoading: ordersLoading } = useQuery({
-    queryKey: ['/api/dashboard/recent-orders'],
-    retry: 1
-  });
-
-  // Fetch top products
-  const { data: topProducts = [], isLoading: productsLoading, isError: productsError } = useQuery({
-    queryKey: ['/api/dashboard/top-products'],
-    retry: 1
-  });
-
-  // Fetch sales by category
-  const { data: salesByCategory = [], isLoading: categoriesLoading, isError: categoriesError } = useQuery({
-    queryKey: ['/api/dashboard/sales-by-category'],
-    retry: 1
-  });
+  // Dados estáticos para o dashboard inicial
+  const stats = { customers: 0, products: 0, orders: 0, revenue: 0 };
+  const recentOrders = [];
+  const topProducts = [];
+  const salesByCategory = [];
+  
+  // Flags de carregamento definidas como false para não mostrar o skeleton
+  const statsLoading = false;
+  const ordersLoading = false;
+  const productsLoading = false;
+  const productsError = false;
+  const categoriesLoading = false;
+  const categoriesError = false;
 
   return (
     <div>
