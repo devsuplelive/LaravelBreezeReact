@@ -1,0 +1,60 @@
+Crie um projeto Laravel 12 com o Breeze Starter Kit usando Inertia.js com React como frontend. O projeto deve conter os seguintes módulos com CRUD completo (migrations, models, controllers, policies, requests e páginas com Inertia/React):
+
+Módulos:
+1. Customers
+Campos: id, name, email, phone, document, address, city, state, zip_code, created_at, updated_at.
+
+2. Brands
+Campos: id, name, created_at, updated_at.
+
+3. Categories
+Campos: id, name, description, created_at, updated_at.
+
+4. Products
+Campos: id, name, sku, price, stock, brand_id, category_id, description, created_at, updated_at.
+
+5. Orders
+Campos: id, customer_id, order_number, status, total_amount, discount, shipping_cost, payment_method, notes, ordered_at, created_at, updated_at.
+
+6. OrderItems
+Campos: id, order_id, product_id, quantity, price, total, created_at, updated_at.
+
+7. Payments
+Campos: id, order_id, payment_date, payment_method, amount, transaction_code, created_at, updated_at.
+
+8. Shipping
+Campos: id, order_id, carrier, tracking_code, shipped_at, delivered_at, shipping_status, created_at, updated_at.
+
+Recursos adicionais:
+✅ Permissões e papéis de usuário
+
+Integrar a biblioteca Spatie Laravel Permission para gerenciamento de papéis (roles) e permissões (permissions).
+
+Adicionar os papéis padrão: admin, manager, sales, viewer.
+
+Criar permissões automáticas para cada módulo (ex: view customers, create products, edit orders, delete categories, etc.).
+
+Proteger rotas e componentes com middleware can:* conforme as permissões do usuário.
+
+Criar interface básica de gerenciamento de usuários, papéis e permissões (mesmo que simples).
+
+Requisitos técnicos:
+Laravel 12 + Breeze (Inertia.js + React + Tailwind CSS).
+
+CRUD completo para cada módulo, com validações e policies.
+
+Dashboard inicial mostrando totais de clientes, produtos e pedidos.
+
+Listagens com paginação e busca simples.
+
+Relacionamentos corretamente configurados nos models.
+
+Seeders com dados realistas usando Faker.
+
+Componentes React reutilizáveis para formulários e tabelas.
+
+Rotas protegidas por autenticação.
+
+Status de pedidos com enum ou constante (pending, paid, shipped, delivered, cancelled).
+
+Preparado para importar pedidos externos (como do ERP Bling).
