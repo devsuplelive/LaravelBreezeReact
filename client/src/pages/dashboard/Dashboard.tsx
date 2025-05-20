@@ -67,13 +67,9 @@ export default function Dashboard() {
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Customers</dt>
                     <dd>
-                      {statsLoading ? (
-                        <Skeleton className="h-6 w-14" />
-                      ) : (
-                        <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                          {stats?.customers?.toLocaleString() || 0}
-                        </div>
-                      )}
+                      <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        {(stats?.customers || 0).toLocaleString()}
+                      </div>
                     </dd>
                   </dl>
                 </div>
@@ -103,13 +99,9 @@ export default function Dashboard() {
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Products</dt>
                     <dd>
-                      {statsLoading ? (
-                        <Skeleton className="h-6 w-14" />
-                      ) : (
-                        <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                          {stats?.products?.toLocaleString() || 0}
-                        </div>
-                      )}
+                      <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        {(stats?.products || 0).toLocaleString()}
+                      </div>
                     </dd>
                   </dl>
                 </div>
@@ -139,13 +131,9 @@ export default function Dashboard() {
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Orders</dt>
                     <dd>
-                      {statsLoading ? (
-                        <Skeleton className="h-6 w-14" />
-                      ) : (
-                        <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                          {stats?.orders?.toLocaleString() || 0}
-                        </div>
-                      )}
+                      <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        {(stats?.orders || 0).toLocaleString()}
+                      </div>
                     </dd>
                   </dl>
                 </div>
@@ -175,16 +163,12 @@ export default function Dashboard() {
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Revenue</dt>
                     <dd>
-                      {statsLoading ? (
-                        <Skeleton className="h-6 w-24" />
-                      ) : (
-                        <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                          {new Intl.NumberFormat('en-US', {
-                            style: 'currency',
-                            currency: 'USD'
-                          }).format(stats?.revenue || 0)}
-                        </div>
-                      )}
+                      <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        {new Intl.NumberFormat('en-US', {
+                          style: 'currency',
+                          currency: 'USD'
+                        }).format(stats?.revenue || 0)}
+                      </div>
                     </dd>
                   </dl>
                 </div>
