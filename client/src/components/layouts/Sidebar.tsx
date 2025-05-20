@@ -162,10 +162,8 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
       <nav className="flex-1 px-2 py-4 overflow-y-auto">
         <div className="space-y-1">
           {menuItems.map((item, index) => {
-            // Skip items that require permissions the user doesn't have
-            if (item.permission && !hasPermission(item.permission)) {
-              return null;
-            }
+            // Temporariamente mostrar todos os itens, ignorando as permissões
+            // para que o usuário possa navegar pelo sistema completo
 
             // For single items without submenus
             if (!item.subItems) {
@@ -219,9 +217,7 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
                 {openMenus[item.key] && (
                   <div className="pl-4 space-y-1">
                     {item.subItems?.map((subItem, subIndex) => {
-                      if (subItem.permission && !hasPermission(subItem.permission)) {
-                        return null;
-                      }
+                      // Mostrar todos os subitens
                       
                       return (
                         <Link
