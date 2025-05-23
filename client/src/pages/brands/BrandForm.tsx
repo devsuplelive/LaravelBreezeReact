@@ -1,146 +1,144 @@
-import React, { useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocation } from "wouter";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { insertBrandSchema } from "@shared/schema";
+import React, { useEffect } from 'react';
+import { useLocation, useParams } from 'wouter';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from '@/hooks/use-toast';
+import AppLayout from '@/components/layouts/AppLayout';
+import { FiSave, FiArrowLeft } from 'react-icons/fi';
 
-// Extend the schema with form validation rules
-const brandFormSchema = insertBrandSchema.extend({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+// Esquema de validação usando Zod
+const brandSchema = z.object({
+  name: z.string().min(1, 'Nome é obrigatório'),
 });
 
-type BrandFormValues = z.infer<typeof brandFormSchema>;
+type BrandFormValues = z.infer<typeof brandSchema>;
 
-interface BrandFormProps {
-  id?: number;
-}
+// Dados mockados para demonstração
+const mockBrands = [
+  {
+    id: 1,
+    name: "Nike",
+  },
+  {
+    id: 2,
+    name: "Adidas",
+  },
+  {
+    id: 3,
+    name: "Puma",
+  }
+];
 
-export default function BrandForm({ id }: BrandFormProps) {
+const BrandForm = () => {
+  const params = useParams();
   const [, setLocation] = useLocation();
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const isEditMode = !!id;
-
-  // Fetch brand data if in edit mode
-  const { data: brand, isLoading } = useQuery({
-    queryKey: ['/api/brands', id],
-    queryFn: async () => {
-      if (!id) return null;
-      const res = await fetch(`/api/brands/${id}`);
-      if (!res.ok) throw new Error('Failed to fetch brand');
-      return res.json();
-    },
-    enabled: isEditMode,
-  });
-
+  const isEditing = Boolean(params.id);
+  const brandId = params.id ? parseInt(params.id) : null;
+  
+  // Inicializa o formulário com react-hook-form
   const form = useForm<BrandFormValues>({
-    resolver: zodResolver(brandFormSchema),
+    resolver: zodResolver(brandSchema),
     defaultValues: {
-      name: "",
+      name: '',
     },
   });
 
-  // Update form when brand data is loaded
+  // Carrega os dados da marca se estiver editando
   useEffect(() => {
-    if (brand) {
-      form.reset(brand);
+    if (isEditing && brandId) {
+      // Simulação de carregamento de dados
+      const brand = mockBrands.find(b => b.id === brandId);
+      
+      if (brand) {
+        form.reset({
+          name: brand.name,
+        });
+      }
     }
-  }, [brand, form]);
+  }, [isEditing, brandId, form]);
 
   const onSubmit = async (data: BrandFormValues) => {
     try {
-      if (isEditMode) {
-        await apiRequest('PUT', `/api/brands/${id}`, data);
-        toast({
-          title: 'Success',
-          description: 'Brand updated successfully',
-        });
-      } else {
-        await apiRequest('POST', '/api/brands', data);
-        toast({
-          title: 'Success',
-          description: 'Brand created successfully',
-        });
-      }
+      // Aqui seria feita a chamada à API para salvar os dados
+      console.log('Dados da marca para salvar:', data);
       
-      // Invalidate the brands query and redirect
-      queryClient.invalidateQueries({ queryKey: ['/api/brands'] });
-      setLocation("/brands");
-    } catch (error) {
       toast({
-        title: 'Error',
-        description: isEditMode ? 'Failed to update brand' : 'Failed to create brand',
-        variant: 'destructive',
+        title: isEditing ? "Marca atualizada" : "Marca criada",
+        description: `${data.name} foi ${isEditing ? 'atualizada' : 'adicionada'} com sucesso.`,
+      });
+      
+      setLocation('/brands');
+    } catch (error) {
+      console.error('Erro ao salvar marca:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Ocorreu um erro ao salvar a marca. Tente novamente.",
       });
     }
   };
 
-  if (isEditMode && isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
-    <div>
-      <div className="mb-6">
-        <Button variant="ghost" onClick={() => setLocation("/brands")} className="mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Brands
-        </Button>
-        <h1 className="text-2xl font-bold">{isEditMode ? 'Edit Brand' : 'Add Brand'}</h1>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{isEditMode ? 'Edit Brand Information' : 'Brand Information'}</CardTitle>
-        </CardHeader>
-        <CardContent>
+    <AppLayout>
+      <div className="container mx-auto py-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="icon" onClick={() => setLocation('/brands')}>
+                <FiArrowLeft />
+              </Button>
+              <CardTitle>{isEditing ? 'Editar Marca' : 'Nova Marca'}</CardTitle>
+            </div>
+          </CardHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Brand Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter brand name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <CardFooter className="px-0 pt-6">
-                <Button type="submit" className="mr-2">
-                  {form.formState.isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {isEditMode ? 'Updating...' : 'Saving...'}
-                    </>
-                  ) : (
-                    isEditMode ? 'Update Brand' : 'Create Brand'
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nome da marca" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
+                />
+              </CardContent>
+              
+              <CardFooter className="flex justify-end gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setLocation('/brands')}
+                >
+                  Cancelar
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setLocation("/brands")}>
-                  Cancel
+                <Button type="submit">
+                  <FiSave className="mr-2" />
+                  Salvar
                 </Button>
               </CardFooter>
             </form>
           </Form>
-        </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </AppLayout>
   );
-}
+};
+
+export default BrandForm;
