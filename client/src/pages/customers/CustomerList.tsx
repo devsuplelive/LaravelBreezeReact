@@ -19,7 +19,6 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiEye } from 'react-icons/fi';
-import AppLayout from '@/components/layouts/AppLayout';
 
 type Customer = {
   id: number;
@@ -93,7 +92,7 @@ const CustomerList = () => {
   };
 
   const handleEdit = (id: number) => {
-    setLocation(`/customers/${id}/edit`);
+    setLocation(`/customers/${id}`);
   };
 
   const handleDelete = (id: number) => {
@@ -104,96 +103,94 @@ const CustomerList = () => {
   };
 
   return (
-    <AppLayout>
-      <div className="container mx-auto py-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Clientes</CardTitle>
-              <CardDescription>
-                Gerencie os clientes da sua empresa.
-              </CardDescription>
+    <div className="container mx-auto py-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Clientes</CardTitle>
+            <CardDescription>
+              Gerencie os clientes da sua empresa.
+            </CardDescription>
+          </div>
+          <Button onClick={() => setLocation('/customers/new')}>
+            <FiPlus className="mr-2" /> Novo Cliente
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center mb-6">
+            <div className="relative w-full max-w-md">
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Buscar por nome, email ou telefone..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
-            <Button onClick={() => setLocation('/customers/new')}>
-              <FiPlus className="mr-2" /> Novo Cliente
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center mb-6">
-              <div className="relative w-full max-w-md">
-                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Buscar por nome, email ou telefone..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
+          </div>
 
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Telefone</TableHead>
-                    <TableHead>Cidade</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredCustomers.length > 0 ? (
-                    filteredCustomers.map((customer) => (
-                      <TableRow key={customer.id}>
-                        <TableCell className="font-medium">{customer.name}</TableCell>
-                        <TableCell>{customer.email}</TableCell>
-                        <TableCell>{customer.phone}</TableCell>
-                        <TableCell>{customer.city}</TableCell>
-                        <TableCell>{customer.state}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleView(customer.id)}
-                            >
-                              <FiEye />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleEdit(customer.id)}
-                            >
-                              <FiEdit />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleDelete(customer.id)}
-                            >
-                              <FiTrash2 />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-6">
-                        Nenhum cliente encontrado.
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Telefone</TableHead>
+                  <TableHead>Cidade</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredCustomers.length > 0 ? (
+                  filteredCustomers.map((customer) => (
+                    <TableRow key={customer.id}>
+                      <TableCell className="font-medium">{customer.name}</TableCell>
+                      <TableCell>{customer.email}</TableCell>
+                      <TableCell>{customer.phone}</TableCell>
+                      <TableCell>{customer.city}</TableCell>
+                      <TableCell>{customer.state}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleView(customer.id)}
+                          >
+                            <FiEye />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleEdit(customer.id)}
+                          >
+                            <FiEdit />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleDelete(customer.id)}
+                          >
+                            <FiTrash2 />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </AppLayout>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-6">
+                      Nenhum cliente encontrado.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
