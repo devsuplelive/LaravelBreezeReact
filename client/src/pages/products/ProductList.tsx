@@ -18,7 +18,6 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiEye } from 'react-icons/fi';
-import AppLayout from '@/components/layouts/AppLayout';
 import { Badge } from '@/components/ui/badge';
 
 type Product = {
@@ -130,102 +129,100 @@ const ProductList = () => {
   };
 
   return (
-    <AppLayout>
-      <div className="container mx-auto py-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Produtos</CardTitle>
-              <CardDescription>
-                Gerencie os produtos da sua empresa.
-              </CardDescription>
+    <div className="container mx-auto py-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Produtos</CardTitle>
+            <CardDescription>
+              Gerencie os produtos da sua empresa.
+            </CardDescription>
+          </div>
+          <Button onClick={() => setLocation('/products/new')}>
+            <FiPlus className="mr-2" /> Novo Produto
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center mb-6">
+            <div className="relative w-full max-w-md">
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Buscar por nome, SKU, marca ou categoria..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
-            <Button onClick={() => setLocation('/products/new')}>
-              <FiPlus className="mr-2" /> Novo Produto
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center mb-6">
-              <div className="relative w-full max-w-md">
-                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Buscar por nome, SKU, marca ou categoria..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
+          </div>
 
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>SKU</TableHead>
-                    <TableHead>Preço</TableHead>
-                    <TableHead>Estoque</TableHead>
-                    <TableHead>Marca</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredProducts.length > 0 ? (
-                    filteredProducts.map((product) => (
-                      <TableRow key={product.id}>
-                        <TableCell className="font-medium">{product.name}</TableCell>
-                        <TableCell>{product.sku}</TableCell>
-                        <TableCell>{formatCurrency(product.price)}</TableCell>
-                        <TableCell>
-                          <Badge variant={product.stock > 10 ? "default" : "destructive"}>
-                            {product.stock}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{product.brand_name}</TableCell>
-                        <TableCell>{product.category_name}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleView(product.id)}
-                            >
-                              <FiEye />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleEdit(product.id)}
-                            >
-                              <FiEdit />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleDelete(product.id)}
-                            >
-                              <FiTrash2 />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-6">
-                        Nenhum produto encontrado.
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>SKU</TableHead>
+                  <TableHead>Preço</TableHead>
+                  <TableHead>Estoque</TableHead>
+                  <TableHead>Marca</TableHead>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredProducts.length > 0 ? (
+                  filteredProducts.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell className="font-medium">{product.name}</TableCell>
+                      <TableCell>{product.sku}</TableCell>
+                      <TableCell>{formatCurrency(product.price)}</TableCell>
+                      <TableCell>
+                        <Badge variant={product.stock > 10 ? "default" : "destructive"}>
+                          {product.stock}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{product.brand_name}</TableCell>
+                      <TableCell>{product.category_name}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleView(product.id)}
+                          >
+                            <FiEye />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleEdit(product.id)}
+                          >
+                            <FiEdit />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleDelete(product.id)}
+                          >
+                            <FiTrash2 />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </AppLayout>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-6">
+                      Nenhum produto encontrado.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
