@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { useLocation, useParams } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, Pencil } from "lucide-react";
@@ -62,11 +62,9 @@ interface Order {
   shipping?: Shipping[];
 }
 
-interface OrderDetailsProps {
-  id: number;
-}
-
-export default function OrderDetails({ id }: OrderDetailsProps) {
+export default function OrderDetails() {
+  const params = useParams();
+  const id = params.id ? parseInt(params.id) : 0;
   const [, setLocation] = useLocation();
 
   // Fetch order data
