@@ -2,6 +2,7 @@ import { Route, Switch } from "wouter";
 import { useAuth } from "./providers/AuthProvider";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import Profile from "./pages/auth/Profile";
 import NotFound from "./pages/not-found";
 import AppLayout from "./components/layouts/AppLayout";
 import Dashboard from "./pages/dashboard/Dashboard";
@@ -50,6 +51,9 @@ function App() {
           </Route>
           <Route path="/register">
             <Register />
+          </Route>
+          <Route path="/profile">
+            <Profile />
           </Route>
 
           {/* Dashboard - homepage */}
