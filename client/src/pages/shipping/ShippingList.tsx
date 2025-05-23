@@ -15,12 +15,34 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+// Interface para a resposta da API
+interface ShippingResponse {
+  shippings: Shipping[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// Interface para um registro de envio
+interface Shipping {
+  id: number;
+  orderId: number;
+  carrier: string;
+  trackingCode: string;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  shippingStatus: string;
+  order?: {
+    orderNumber: string;
+  };
+}
+
 export default function ShippingList() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = React.useState("");
 
   // Fetch shipping data
-  const { data: shippingList, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<ShippingResponse>({
     queryKey: ['/api/shipping'],
     queryFn: async () => {
       const res = await fetch('/api/shipping');
@@ -31,18 +53,19 @@ export default function ShippingList() {
 
   // Filter shipping based on search term
   const filteredShipping = React.useMemo(() => {
-    if (!shippingList) return [];
-    return shippingList.filter((shipping: any) => 
+    if (!data || !data.shippings) return [];
+    
+    return data.shippings.filter((shipping: Shipping) => 
       shipping.order?.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       shipping.trackingCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       shipping.carrier?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [shippingList, searchTerm]);
+  }, [data, searchTerm]);
 
   // Format date
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -53,13 +76,13 @@ export default function ShippingList() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-600 border-yellow-200">Pending</Badge>;
+        return <Badge variant="outline" className="bg-yellow-50 text-yellow-600 border-yellow-200">Pendente</Badge>;
       case 'shipped':
-        return <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">Shipped</Badge>;
+        return <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">Enviado</Badge>;
       case 'delivered':
-        return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Delivered</Badge>;
+        return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Entregue</Badge>;
       case 'returned':
-        return <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">Returned</Badge>;
+        return <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">Devolvido</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -74,17 +97,15 @@ export default function ShippingList() {
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Shipping</h1>
-        <Button onClick={() => setLocation("/shipping/new")}>
-          <Plus className="mr-2 h-4 w-4" /> New Shipping
-        </Button>
-      </div>
-
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Shipping Management</CardTitle>
+    <div className="container mx-auto py-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Entregas</CardTitle>
+          </div>
+          <Button onClick={() => setLocation("/shipping/new")}>
+            <Plus className="mr-2 h-4 w-4" /> Nova Entrega
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="flex mb-4">
@@ -92,7 +113,7 @@ export default function ShippingList() {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 type="text"
-                placeholder="Search by order, tracking, carrier..."
+                placeholder="Buscar por pedido, rastreio, transportadora..."
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -104,18 +125,18 @@ export default function ShippingList() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Order #</TableHead>
-                  <TableHead>Carrier</TableHead>
-                  <TableHead>Tracking Code</TableHead>
-                  <TableHead>Ship Date</TableHead>
-                  <TableHead>Delivery Date</TableHead>
+                  <TableHead>Pedido #</TableHead>
+                  <TableHead>Transportadora</TableHead>
+                  <TableHead>Código de Rastreio</TableHead>
+                  <TableHead>Data de Envio</TableHead>
+                  <TableHead>Data de Entrega</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredShipping.length > 0 ? (
-                  filteredShipping.map((shipping: any) => (
+                  filteredShipping.map((shipping: Shipping) => (
                     <TableRow key={shipping.id}>
                       <TableCell className="font-medium">
                         <Button 
@@ -123,7 +144,7 @@ export default function ShippingList() {
                           className="p-0 h-auto font-medium"
                           onClick={() => setLocation(`/orders/${shipping.orderId}`)}
                         >
-                          {shipping.order?.orderNumber || `Order #${shipping.orderId}`}
+                          {shipping.order?.orderNumber || `Pedido #${shipping.orderId}`}
                         </Button>
                       </TableCell>
                       <TableCell>{shipping.carrier || "-"}</TableCell>
@@ -151,7 +172,9 @@ export default function ShippingList() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center">
-                      {searchTerm ? 'No shipping records found matching your search.' : 'No shipping records found.'}
+                      {searchTerm 
+                        ? 'Nenhum registro de entrega encontrado para sua busca.' 
+                        : 'Nenhum registro de entrega encontrado.'}
                     </TableCell>
                   </TableRow>
                 )}
