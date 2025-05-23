@@ -1,169 +1,169 @@
-import React, { useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocation } from "wouter";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { insertCategorySchema } from "@shared/schema";
+import React, { useEffect } from 'react';
+import { useLocation, useParams } from 'wouter';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from '@/hooks/use-toast';
+import AppLayout from '@/components/layouts/AppLayout';
+import { FiSave, FiArrowLeft } from 'react-icons/fi';
 
-// Extend the schema with form validation rules
-const categoryFormSchema = insertCategorySchema.extend({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+// Esquema de validação usando Zod
+const categorySchema = z.object({
+  name: z.string().min(1, 'Nome é obrigatório'),
   description: z.string().optional(),
 });
 
-type CategoryFormValues = z.infer<typeof categoryFormSchema>;
+type CategoryFormValues = z.infer<typeof categorySchema>;
 
-interface CategoryFormProps {
-  id?: number;
-}
+// Dados mockados para demonstração
+const mockCategories = [
+  {
+    id: 1,
+    name: "Eletrônicos",
+    description: "Produtos eletrônicos como smartphones, tablets e laptops",
+  },
+  {
+    id: 2,
+    name: "Roupas",
+    description: "Vestimentas masculinas e femininas",
+  },
+  {
+    id: 3,
+    name: "Calçados",
+    description: "Sapatos, tênis, sandálias e botas",
+  }
+];
 
-export default function CategoryForm({ id }: CategoryFormProps) {
+const CategoryForm = () => {
+  const params = useParams();
   const [, setLocation] = useLocation();
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const isEditMode = !!id;
-
-  // Fetch category data if in edit mode
-  const { data: category, isLoading } = useQuery({
-    queryKey: ['/api/categories', id],
-    queryFn: async () => {
-      if (!id) return null;
-      const res = await fetch(`/api/categories/${id}`);
-      if (!res.ok) throw new Error('Failed to fetch category');
-      return res.json();
-    },
-    enabled: isEditMode,
-  });
-
+  const isEditing = Boolean(params.id);
+  const categoryId = params.id ? parseInt(params.id) : null;
+  
+  // Inicializa o formulário com react-hook-form
   const form = useForm<CategoryFormValues>({
-    resolver: zodResolver(categoryFormSchema),
+    resolver: zodResolver(categorySchema),
     defaultValues: {
-      name: "",
-      description: "",
+      name: '',
+      description: '',
     },
   });
 
-  // Update form when category data is loaded
+  // Carrega os dados da categoria se estiver editando
   useEffect(() => {
-    if (category) {
-      form.reset(category);
+    if (isEditing && categoryId) {
+      // Simulação de carregamento de dados
+      const category = mockCategories.find(c => c.id === categoryId);
+      
+      if (category) {
+        form.reset({
+          name: category.name,
+          description: category.description || '',
+        });
+      }
     }
-  }, [category, form]);
+  }, [isEditing, categoryId, form]);
 
   const onSubmit = async (data: CategoryFormValues) => {
     try {
-      if (isEditMode) {
-        await apiRequest('PUT', `/api/categories/${id}`, data);
-        toast({
-          title: 'Success',
-          description: 'Category updated successfully',
-        });
-      } else {
-        await apiRequest('POST', '/api/categories', data);
-        toast({
-          title: 'Success',
-          description: 'Category created successfully',
-        });
-      }
+      // Aqui seria feita a chamada à API para salvar os dados
+      console.log('Dados da categoria para salvar:', data);
       
-      // Invalidate the categories query and redirect
-      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
-      setLocation("/categories");
-    } catch (error) {
       toast({
-        title: 'Error',
-        description: isEditMode ? 'Failed to update category' : 'Failed to create category',
-        variant: 'destructive',
+        title: isEditing ? "Categoria atualizada" : "Categoria criada",
+        description: `${data.name} foi ${isEditing ? 'atualizada' : 'adicionada'} com sucesso.`,
+      });
+      
+      setLocation('/categories');
+    } catch (error) {
+      console.error('Erro ao salvar categoria:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Ocorreu um erro ao salvar a categoria. Tente novamente.",
       });
     }
   };
 
-  if (isEditMode && isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
-    <div>
-      <div className="mb-6">
-        <Button variant="ghost" onClick={() => setLocation("/categories")} className="mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Categories
-        </Button>
-        <h1 className="text-2xl font-bold">{isEditMode ? 'Edit Category' : 'Add Category'}</h1>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{isEditMode ? 'Edit Category Information' : 'Category Information'}</CardTitle>
-        </CardHeader>
-        <CardContent>
+    <AppLayout>
+      <div className="container mx-auto py-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="icon" onClick={() => setLocation('/categories')}>
+                <FiArrowLeft />
+              </Button>
+              <CardTitle>{isEditing ? 'Editar Categoria' : 'Nova Categoria'}</CardTitle>
+            </div>
+          </CardHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter category name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Enter category description" 
-                        className="resize-none" 
-                        rows={4}
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <CardFooter className="px-0 pt-6">
-                <Button type="submit" className="mr-2">
-                  {form.formState.isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {isEditMode ? 'Updating...' : 'Saving...'}
-                    </>
-                  ) : (
-                    isEditMode ? 'Update Category' : 'Create Category'
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nome da categoria" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descrição</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Descreva a categoria (opcional)" 
+                          {...field} 
+                          className="min-h-[100px]"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+              
+              <CardFooter className="flex justify-end gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setLocation('/categories')}
+                >
+                  Cancelar
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setLocation("/categories")}>
-                  Cancel
+                <Button type="submit">
+                  <FiSave className="mr-2" />
+                  Salvar
                 </Button>
               </CardFooter>
             </form>
           </Form>
-        </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </AppLayout>
   );
-}
+};
+
+export default CategoryForm;

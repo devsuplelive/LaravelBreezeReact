@@ -1,160 +1,164 @@
-import React, { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocation } from "wouter";
-import { DataTable } from "@/components/ui/data-table";
-import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Plus } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Brand } from "@shared/schema";
+import React, { useState } from 'react';
+import { useLocation } from 'wouter';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { FiPlus, FiEdit, FiTrash2, FiSearch } from 'react-icons/fi';
+import AppLayout from '@/components/layouts/AppLayout';
 
-export default function BrandList() {
+type Brand = {
+  id: number;
+  name: string;
+  created_at: string;
+  updated_at: string;
+};
+
+const BrandList = () => {
+  const [searchTerm, setSearchTerm] = useState('');
   const [, setLocation] = useLocation();
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [deleteBrandId, setDeleteBrandId] = useState<number | null>(null);
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['/api/brands', page, pageSize, searchTerm],
-    queryFn: async () => {
-      const res = await fetch(`/api/brands?page=${page}&limit=${pageSize}&search=${searchTerm}`);
-      if (!res.ok) throw new Error('Failed to fetch brands');
-      return res.json();
+  // Dados estáticos para demonstração
+  const brands: Brand[] = [
+    {
+      id: 1,
+      name: "Nike",
+      created_at: "2023-05-10T10:00:00",
+      updated_at: "2023-05-10T10:00:00"
+    },
+    {
+      id: 2,
+      name: "Adidas",
+      created_at: "2023-05-15T14:30:00",
+      updated_at: "2023-05-15T14:30:00"
+    },
+    {
+      id: 3,
+      name: "Puma",
+      created_at: "2023-05-20T09:15:00",
+      updated_at: "2023-05-20T09:15:00"
+    },
+    {
+      id: 4,
+      name: "Apple",
+      created_at: "2023-05-25T11:20:00",
+      updated_at: "2023-05-25T11:20:00"
+    },
+    {
+      id: 5,
+      name: "Samsung",
+      created_at: "2023-05-30T16:45:00",
+      updated_at: "2023-05-30T16:45:00"
     }
-  });
-
-  const handleDelete = async () => {
-    if (!deleteBrandId) return;
-    
-    try {
-      await apiRequest('DELETE', `/api/brands/${deleteBrandId}`);
-      
-      toast({
-        title: 'Success',
-        description: 'Brand deleted successfully',
-      });
-      
-      // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ['/api/brands'] });
-      setDeleteBrandId(null);
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete brand. It may be in use by products.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    setPage(1); // Reset to first page when searching
-  };
-
-  const columns = [
-    {
-      header: "Name",
-      accessorKey: "name",
-    },
-    {
-      header: "Created At",
-      accessorKey: "createdAt",
-      cell: (row: Brand) => new Date(row.createdAt).toLocaleDateString(),
-    },
-    {
-      header: "Updated At",
-      accessorKey: "updatedAt",
-      cell: (row: Brand) => new Date(row.updatedAt).toLocaleDateString(),
-    },
-    {
-      header: "Actions",
-      accessorKey: "id",
-      cell: (row: Brand) => (
-        <div className="flex space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              setLocation(`/brands/${row.id}`);
-            }}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeleteBrandId(row.id);
-            }}
-          >
-            <Trash2 className="h-4 w-4 text-red-500" />
-          </Button>
-        </div>
-      ),
-    },
   ];
 
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Brands</h1>
-        <Button onClick={() => setLocation("/brands/new")}>
-          <Plus className="h-4 w-4 mr-2" /> Add Brand
-        </Button>
-      </div>
-
-      <DataTable
-        data={data?.brands || []}
-        columns={columns}
-        onSearch={handleSearch}
-        searchPlaceholder="Search brands..."
-        pagination={{
-          pageIndex: page - 1,
-          pageCount: Math.ceil((data?.total || 0) / pageSize),
-          pageSize,
-          onPageChange: (newPage) => setPage(newPage + 1),
-          onPageSizeChange: (newSize) => {
-            setPageSize(newSize);
-            setPage(1);
-          },
-        }}
-        isLoading={isLoading}
-        onRefresh={refetch}
-        onRowClick={(row) => setLocation(`/brands/${row.id}`)}
-      />
-
-      <AlertDialog open={!!deleteBrandId} onOpenChange={() => setDeleteBrandId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              brand and may affect products associated with it.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+  const filteredBrands = brands.filter(brand => 
+    brand.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-}
+
+  const handleEdit = (id: number) => {
+    setLocation(`/brands/${id}/edit`);
+  };
+
+  const handleDelete = (id: number) => {
+    if (window.confirm('Tem certeza que deseja excluir esta marca?')) {
+      // Lógica para excluir a marca seria implementada aqui
+      console.log(`Excluindo marca ${id}`);
+    }
+  };
+
+  return (
+    <AppLayout>
+      <div className="container mx-auto py-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Marcas</CardTitle>
+              <CardDescription>
+                Gerencie as marcas dos produtos da sua empresa.
+              </CardDescription>
+            </div>
+            <Button onClick={() => setLocation('/brands/new')}>
+              <FiPlus className="mr-2" /> Nova Marca
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center mb-6">
+              <div className="relative w-full max-w-md">
+                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Buscar por nome..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Data de criação</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredBrands.length > 0 ? (
+                    filteredBrands.map((brand) => (
+                      <TableRow key={brand.id}>
+                        <TableCell className="font-medium">{brand.name}</TableCell>
+                        <TableCell>{new Date(brand.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleEdit(brand.id)}
+                            >
+                              <FiEdit />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleDelete(brand.id)}
+                            >
+                              <FiTrash2 />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center py-6">
+                        Nenhuma marca encontrada.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </AppLayout>
+  );
+};
+
+export default BrandList;

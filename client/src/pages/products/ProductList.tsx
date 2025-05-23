@@ -1,186 +1,232 @@
-import React, { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocation } from "wouter";
-import { DataTable } from "@/components/ui/data-table";
-import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Plus, Eye } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Product, ProductWithRelations } from "@shared/schema";
-import { Badge } from "@/components/ui/badge";
+import React, { useState } from 'react';
+import { useLocation } from 'wouter';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { FiPlus, FiEdit, FiTrash2, FiSearch, FiEye } from 'react-icons/fi';
+import AppLayout from '@/components/layouts/AppLayout';
+import { Badge } from '@/components/ui/badge';
 
-export default function ProductList() {
+type Product = {
+  id: number;
+  name: string;
+  sku: string;
+  price: number;
+  stock: number;
+  brand_id: number;
+  brand_name: string;
+  category_id: number;
+  category_name: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+};
+
+const ProductList = () => {
+  const [searchTerm, setSearchTerm] = useState('');
   const [, setLocation] = useLocation();
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [deleteProductId, setDeleteProductId] = useState<number | null>(null);
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['/api/products', page, pageSize, searchTerm],
-    queryFn: async () => {
-      const res = await fetch(`/api/products?page=${page}&limit=${pageSize}&search=${searchTerm}`);
-      if (!res.ok) throw new Error('Failed to fetch products');
-      return res.json();
+  // Dados estáticos para demonstração
+  const products: Product[] = [
+    {
+      id: 1,
+      name: "iPhone 13 Pro",
+      sku: "APPH-13PRO-256",
+      price: 5999.00,
+      stock: 25,
+      brand_id: 4,
+      brand_name: "Apple",
+      category_id: 1,
+      category_name: "Eletrônicos",
+      description: "iPhone 13 Pro com 256GB de armazenamento",
+      created_at: "2023-05-10T10:00:00",
+      updated_at: "2023-05-10T10:00:00"
+    },
+    {
+      id: 2,
+      name: "Samsung Galaxy S22",
+      sku: "SAMG-S22-128",
+      price: 4499.00,
+      stock: 18,
+      brand_id: 5,
+      brand_name: "Samsung",
+      category_id: 1,
+      category_name: "Eletrônicos",
+      description: "Samsung Galaxy S22 com 128GB de armazenamento",
+      created_at: "2023-05-15T14:30:00",
+      updated_at: "2023-05-15T14:30:00"
+    },
+    {
+      id: 3,
+      name: "Tênis Nike Air Max",
+      sku: "NK-AIRMAX-42",
+      price: 799.00,
+      stock: 30,
+      brand_id: 1,
+      brand_name: "Nike",
+      category_id: 3,
+      category_name: "Calçados",
+      description: "Tênis Nike Air Max masculino, tamanho 42",
+      created_at: "2023-05-20T09:15:00",
+      updated_at: "2023-05-20T09:15:00"
+    },
+    {
+      id: 4,
+      name: "Camisa Adidas Originals",
+      sku: "AD-ORIG-M",
+      price: 299.00,
+      stock: 45,
+      brand_id: 2,
+      brand_name: "Adidas",
+      category_id: 2,
+      category_name: "Roupas",
+      description: "Camisa Adidas Originals, tamanho M",
+      created_at: "2023-05-25T11:20:00",
+      updated_at: "2023-05-25T11:20:00"
     }
-  });
-
-  const handleDelete = async () => {
-    if (!deleteProductId) return;
-    
-    try {
-      await apiRequest('DELETE', `/api/products/${deleteProductId}`);
-      
-      toast({
-        title: 'Success',
-        description: 'Product deleted successfully',
-      });
-      
-      // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
-      setDeleteProductId(null);
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete product. It may be used in orders.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    setPage(1); // Reset to first page when searching
-  };
-
-  const columns = [
-    {
-      header: "Name",
-      accessorKey: "name",
-    },
-    {
-      header: "SKU",
-      accessorKey: "sku",
-    },
-    {
-      header: "Price",
-      accessorKey: "price",
-      cell: (row: Product) => {
-        return new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD'
-        }).format(Number(row.price));
-      },
-    },
-    {
-      header: "Stock",
-      accessorKey: "stock",
-      cell: (row: Product) => {
-        if (row.stock <= 0) {
-          return <Badge variant="destructive">Out of Stock</Badge>;
-        } else if (row.stock < 10) {
-          return <Badge variant="outline" className="text-yellow-600 border-yellow-300 bg-yellow-50">Low: {row.stock}</Badge>;
-        } else {
-          return <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50">{row.stock}</Badge>;
-        }
-      },
-    },
-    {
-      header: "Brand",
-      accessorKey: (row: ProductWithRelations) => row.brand?.name || "—",
-    },
-    {
-      header: "Category",
-      accessorKey: (row: ProductWithRelations) => row.category?.name || "—",
-    },
-    {
-      header: "Actions",
-      accessorKey: "id",
-      cell: (row: Product) => (
-        <div className="flex space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              setLocation(`/products/${row.id}`);
-            }}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeleteProductId(row.id);
-            }}
-          >
-            <Trash2 className="h-4 w-4 text-red-500" />
-          </Button>
-        </div>
-      ),
-    },
   ];
 
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Products</h1>
-        <Button onClick={() => setLocation("/products/new")}>
-          <Plus className="h-4 w-4 mr-2" /> Add Product
-        </Button>
-      </div>
-
-      <DataTable
-        data={data?.products || []}
-        columns={columns}
-        onSearch={handleSearch}
-        searchPlaceholder="Search products by name, SKU, or description..."
-        pagination={{
-          pageIndex: page - 1,
-          pageCount: Math.ceil((data?.total || 0) / pageSize),
-          pageSize,
-          onPageChange: (newPage) => setPage(newPage + 1),
-          onPageSizeChange: (newSize) => {
-            setPageSize(newSize);
-            setPage(1);
-          },
-        }}
-        isLoading={isLoading}
-        onRefresh={refetch}
-        onRowClick={(row) => setLocation(`/products/${row.id}`)}
-      />
-
-      <AlertDialog open={!!deleteProductId} onOpenChange={() => setDeleteProductId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              product and may affect orders that contain it.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+  const filteredProducts = products.filter(product => 
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.brand_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.category_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-}
+
+  const formatCurrency = (value: number) => {
+    return value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  };
+
+  const handleView = (id: number) => {
+    setLocation(`/products/${id}`);
+  };
+
+  const handleEdit = (id: number) => {
+    setLocation(`/products/${id}/edit`);
+  };
+
+  const handleDelete = (id: number) => {
+    if (window.confirm('Tem certeza que deseja excluir este produto?')) {
+      // Lógica para excluir o produto seria implementada aqui
+      console.log(`Excluindo produto ${id}`);
+    }
+  };
+
+  return (
+    <AppLayout>
+      <div className="container mx-auto py-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Produtos</CardTitle>
+              <CardDescription>
+                Gerencie os produtos da sua empresa.
+              </CardDescription>
+            </div>
+            <Button onClick={() => setLocation('/products/new')}>
+              <FiPlus className="mr-2" /> Novo Produto
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center mb-6">
+              <div className="relative w-full max-w-md">
+                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Buscar por nome, SKU, marca ou categoria..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>SKU</TableHead>
+                    <TableHead>Preço</TableHead>
+                    <TableHead>Estoque</TableHead>
+                    <TableHead>Marca</TableHead>
+                    <TableHead>Categoria</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredProducts.length > 0 ? (
+                    filteredProducts.map((product) => (
+                      <TableRow key={product.id}>
+                        <TableCell className="font-medium">{product.name}</TableCell>
+                        <TableCell>{product.sku}</TableCell>
+                        <TableCell>{formatCurrency(product.price)}</TableCell>
+                        <TableCell>
+                          <Badge variant={product.stock > 10 ? "default" : "destructive"}>
+                            {product.stock}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{product.brand_name}</TableCell>
+                        <TableCell>{product.category_name}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleView(product.id)}
+                            >
+                              <FiEye />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleEdit(product.id)}
+                            >
+                              <FiEdit />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleDelete(product.id)}
+                            >
+                              <FiTrash2 />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-6">
+                        Nenhum produto encontrado.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </AppLayout>
+  );
+};
+
+export default ProductList;

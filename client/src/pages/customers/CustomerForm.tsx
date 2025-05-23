@@ -60,7 +60,7 @@ const mockCustomers = [
 
 const CustomerForm = () => {
   const params = useParams();
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const isEditing = Boolean(params.id);
   const customerId = params.id ? parseInt(params.id) : null;
   
@@ -110,7 +110,7 @@ const CustomerForm = () => {
         description: `${data.name} foi ${isEditing ? 'atualizado' : 'adicionado'} com sucesso.`,
       });
       
-      navigate('/customers');
+      setLocation('/customers');
     } catch (error) {
       console.error('Erro ao salvar cliente:', error);
       toast({
@@ -127,7 +127,7 @@ const CustomerForm = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-4">
-              <Button variant="outline" size="icon" onClick={() => navigate('/customers')}>
+              <Button variant="outline" size="icon" onClick={() => setLocation('/customers')}>
                 <FiArrowLeft />
               </Button>
               <CardTitle>{isEditing ? 'Editar Cliente' : 'Novo Cliente'}</CardTitle>
@@ -257,7 +257,7 @@ const CustomerForm = () => {
                 <Button 
                   type="button" 
                   variant="outline" 
-                  onClick={() => navigate('/customers')}
+                  onClick={() => setLocation('/customers')}
                 >
                   Cancelar
                 </Button>
