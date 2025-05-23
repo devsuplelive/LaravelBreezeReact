@@ -15,12 +15,33 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+// Interface para a resposta da API
+interface PaymentResponse {
+  payments: Payment[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// Interface para um pagamento
+interface Payment {
+  id: number;
+  orderId: number;
+  paymentDate: string;
+  paymentMethod: string;
+  transactionCode: string;
+  amount: string | number;
+  order?: {
+    orderNumber: string;
+  };
+}
+
 export default function PaymentList() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = React.useState("");
 
   // Fetch payments data
-  const { data: payments, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<PaymentResponse>({
     queryKey: ['/api/payments'],
     queryFn: async () => {
       const res = await fetch('/api/payments');
@@ -31,12 +52,13 @@ export default function PaymentList() {
 
   // Filter payments based on search term
   const filteredPayments = React.useMemo(() => {
-    if (!payments) return [];
-    return payments.filter((payment: any) => 
+    if (!data || !data.payments) return [];
+    
+    return data.payments.filter((payment: Payment) => 
       payment.order?.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       payment.transactionCode?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [payments, searchTerm]);
+  }, [data, searchTerm]);
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -64,17 +86,15 @@ export default function PaymentList() {
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Payments</h1>
-        <Button onClick={() => setLocation("/payments/new")}>
-          <Plus className="mr-2 h-4 w-4" /> New Payment
-        </Button>
-      </div>
-
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Payment Management</CardTitle>
+    <div className="container mx-auto py-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Pagamentos</CardTitle>
+          </div>
+          <Button onClick={() => setLocation("/payments/new")}>
+            <Plus className="mr-2 h-4 w-4" /> Novo Pagamento
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="flex mb-4">
@@ -82,7 +102,7 @@ export default function PaymentList() {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 type="text"
-                placeholder="Search payments..."
+                placeholder="Buscar pagamentos..."
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -94,17 +114,17 @@ export default function PaymentList() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Order #</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Method</TableHead>
-                  <TableHead>Transaction Code</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Pedido #</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Método</TableHead>
+                  <TableHead>Código Transação</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredPayments.length > 0 ? (
-                  filteredPayments.map((payment: any) => (
+                  filteredPayments.map((payment: Payment) => (
                     <TableRow key={payment.id}>
                       <TableCell className="font-medium">
                         <Button 
@@ -112,7 +132,7 @@ export default function PaymentList() {
                           className="p-0 h-auto font-medium"
                           onClick={() => setLocation(`/orders/${payment.orderId}`)}
                         >
-                          {payment.order?.orderNumber || `Order #${payment.orderId}`}
+                          {payment.order?.orderNumber || `Pedido #${payment.orderId}`}
                         </Button>
                       </TableCell>
                       <TableCell>{formatDate(payment.paymentDate)}</TableCell>
@@ -143,7 +163,7 @@ export default function PaymentList() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} className="h-24 text-center">
-                      {searchTerm ? 'No payments found matching your search.' : 'No payments found.'}
+                      {searchTerm ? 'Nenhum pagamento encontrado para sua busca.' : 'Nenhum pagamento encontrado.'}
                     </TableCell>
                   </TableRow>
                 )}
