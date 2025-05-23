@@ -15,12 +15,32 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+// Interface para a resposta da API
+interface UserResponse {
+  users: User[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// Interface para um usuário
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  active: boolean;
+  createdAt: string;
+  roles?: any[];
+}
+
 export default function UserList() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = React.useState("");
 
   // Fetch users data
-  const { data: users, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<UserResponse>({
     queryKey: ['/api/users'],
     queryFn: async () => {
       const res = await fetch('/api/users');
@@ -31,18 +51,19 @@ export default function UserList() {
 
   // Filter users based on search term
   const filteredUsers = React.useMemo(() => {
-    if (!users) return [];
-    return users.filter((user: any) => 
+    if (!data || !data.users) return [];
+    
+    return data.users.filter((user: User) => 
       user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [users, searchTerm]);
+  }, [data, searchTerm]);
 
   // Format date
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -58,17 +79,15 @@ export default function UserList() {
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Users</h1>
-        <Button onClick={() => setLocation("/users/new")}>
-          <Plus className="mr-2 h-4 w-4" /> New User
-        </Button>
-      </div>
-
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>User Management</CardTitle>
+    <div className="container mx-auto py-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Usuários</CardTitle>
+          </div>
+          <Button onClick={() => setLocation("/users/new")}>
+            <Plus className="mr-2 h-4 w-4" /> Novo Usuário
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="flex mb-4">
@@ -76,7 +95,7 @@ export default function UserList() {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 type="text"
-                placeholder="Search users..."
+                placeholder="Buscar usuários..."
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -88,18 +107,18 @@ export default function UserList() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Username</TableHead>
-                  <TableHead>Name</TableHead>
+                  <TableHead>Usuário</TableHead>
+                  <TableHead>Nome</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
+                  <TableHead>Papel</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Criado em</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredUsers.length > 0 ? (
-                  filteredUsers.map((user: any) => (
+                  filteredUsers.map((user: User) => (
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center">
@@ -129,7 +148,7 @@ export default function UserList() {
                           variant={user.active ? "default" : "secondary"}
                           className={user.active ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
                         >
-                          {user.active ? "Active" : "Inactive"}
+                          {user.active ? "Ativo" : "Inativo"}
                         </Badge>
                       </TableCell>
                       <TableCell>{formatDate(user.createdAt)}</TableCell>
@@ -147,7 +166,7 @@ export default function UserList() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center">
-                      {searchTerm ? 'No users found matching your search.' : 'No users found.'}
+                      {searchTerm ? 'Nenhum usuário encontrado para sua busca.' : 'Nenhum usuário encontrado.'}
                     </TableCell>
                   </TableRow>
                 )}

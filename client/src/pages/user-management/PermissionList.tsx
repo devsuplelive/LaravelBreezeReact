@@ -12,11 +12,27 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+// Interface para a resposta da API
+interface PermissionResponse {
+  permissions: Permission[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// Interface para uma permissão
+interface Permission {
+  id: number;
+  name: string;
+  description: string | null;
+  roles?: any[];
+}
+
 export default function PermissionList() {
   const [searchTerm, setSearchTerm] = React.useState("");
 
   // Fetch permissions data
-  const { data: permissions, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<PermissionResponse>({
     queryKey: ['/api/permissions'],
     queryFn: async () => {
       const res = await fetch('/api/permissions');
@@ -27,12 +43,13 @@ export default function PermissionList() {
 
   // Filter permissions based on search term
   const filteredPermissions = React.useMemo(() => {
-    if (!permissions) return [];
-    return permissions.filter((permission: any) => 
+    if (!data || !data.permissions) return [];
+    
+    return data.permissions.filter((permission: Permission) => 
       permission.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       permission.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [permissions, searchTerm]);
+  }, [data, searchTerm]);
 
   if (isLoading) {
     return (
@@ -43,15 +60,10 @@ export default function PermissionList() {
   }
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Permissions</h1>
-        <p className="text-gray-600 mt-1">View all available permissions in the system</p>
-      </div>
-
-      <Card className="mb-6">
+    <div className="container mx-auto py-6">
+      <Card>
         <CardHeader>
-          <CardTitle>Permission List</CardTitle>
+          <CardTitle>Lista de Permissões</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex mb-4">
@@ -59,7 +71,7 @@ export default function PermissionList() {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 type="text"
-                placeholder="Search permissions..."
+                placeholder="Buscar permissões..."
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -71,14 +83,14 @@ export default function PermissionList() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Permission Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Used In Roles</TableHead>
+                  <TableHead>Nome da Permissão</TableHead>
+                  <TableHead>Descrição</TableHead>
+                  <TableHead>Utilizado em Papéis</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredPermissions.length > 0 ? (
-                  filteredPermissions.map((permission: any) => (
+                  filteredPermissions.map((permission: Permission) => (
                     <TableRow key={permission.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center">
@@ -89,9 +101,9 @@ export default function PermissionList() {
                       <TableCell>{permission.description || '-'}</TableCell>
                       <TableCell>
                         {permission.roles?.length > 0 ? (
-                          <span className="text-sm">{permission.roles.length} roles</span>
+                          <span className="text-sm">{permission.roles.length} papéis</span>
                         ) : (
-                          <span className="text-sm text-gray-500">Not assigned to any role</span>
+                          <span className="text-sm text-gray-500">Não atribuído a nenhum papel</span>
                         )}
                       </TableCell>
                     </TableRow>
@@ -99,7 +111,7 @@ export default function PermissionList() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={3} className="h-24 text-center">
-                      {searchTerm ? 'No permissions found matching your search.' : 'No permissions found.'}
+                      {searchTerm ? 'Nenhuma permissão encontrada para sua busca.' : 'Nenhuma permissão encontrada.'}
                     </TableCell>
                   </TableRow>
                 )}
