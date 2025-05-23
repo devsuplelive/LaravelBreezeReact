@@ -21,6 +21,7 @@ import PaymentForm from "./pages/payments/PaymentForm";
 import ShippingList from "./pages/shipping/ShippingList";
 import ShippingForm from "./pages/shipping/ShippingForm";
 import UserList from "./pages/user-management/UserList";
+import UserForm from "./pages/user-management/UserForm";
 import RoleList from "./pages/user-management/RoleList";
 import PermissionList from "./pages/user-management/PermissionList";
 import { Suspense } from "react";
@@ -138,6 +139,12 @@ function App() {
           {/* User Management */}
           <Route path="/users">
             <UserList />
+          </Route>
+          <Route path="/users/new">
+            <UserForm />
+          </Route>
+          <Route path="/users/:id">
+            <UserForm />
           </Route>
           <Route path="/roles">
             <RoleList />

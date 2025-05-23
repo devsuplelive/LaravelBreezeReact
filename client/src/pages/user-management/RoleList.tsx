@@ -15,12 +15,28 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+// Interface para a resposta da API
+interface RoleResponse {
+  roles: Role[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// Interface para um papel
+interface Role {
+  id: number;
+  name: string;
+  description: string | null;
+  permissions?: any[];
+}
+
 export default function RoleList() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = React.useState("");
 
   // Fetch roles data
-  const { data: roles, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<RoleResponse>({
     queryKey: ['/api/roles'],
     queryFn: async () => {
       const res = await fetch('/api/roles');
@@ -31,12 +47,13 @@ export default function RoleList() {
 
   // Filter roles based on search term
   const filteredRoles = React.useMemo(() => {
-    if (!roles) return [];
-    return roles.filter((role: any) => 
+    if (!data || !data.roles) return [];
+    
+    return data.roles.filter((role: Role) => 
       role.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       role.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [roles, searchTerm]);
+  }, [data, searchTerm]);
 
   if (isLoading) {
     return (
@@ -47,17 +64,15 @@ export default function RoleList() {
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Roles</h1>
-        <Button onClick={() => setLocation("/roles/new")}>
-          <Plus className="mr-2 h-4 w-4" /> New Role
-        </Button>
-      </div>
-
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Role Management</CardTitle>
+    <div className="container mx-auto py-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Papéis e Permissões</CardTitle>
+          </div>
+          <Button onClick={() => setLocation("/roles/new")}>
+            <Plus className="mr-2 h-4 w-4" /> Novo Papel
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="flex mb-4">
@@ -65,7 +80,7 @@ export default function RoleList() {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 type="text"
-                placeholder="Search roles..."
+                placeholder="Buscar papéis..."
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -77,15 +92,15 @@ export default function RoleList() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Permissions</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Descrição</TableHead>
+                  <TableHead>Permissões</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredRoles.length > 0 ? (
-                  filteredRoles.map((role: any) => (
+                  filteredRoles.map((role: Role) => (
                     <TableRow key={role.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center">
@@ -97,9 +112,9 @@ export default function RoleList() {
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {role.permissions?.length > 0 ? (
-                            <span className="text-sm text-gray-600">{role.permissions.length} permissions</span>
+                            <span className="text-sm text-gray-600">{role.permissions.length} permissões</span>
                           ) : (
-                            <span className="text-sm text-gray-500">No permissions</span>
+                            <span className="text-sm text-gray-500">Sem permissões</span>
                           )}
                         </div>
                       </TableCell>
@@ -117,7 +132,7 @@ export default function RoleList() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={4} className="h-24 text-center">
-                      {searchTerm ? 'No roles found matching your search.' : 'No roles found.'}
+                      {searchTerm ? 'Nenhum papel encontrado para sua busca.' : 'Nenhum papel encontrado.'}
                     </TableCell>
                   </TableRow>
                 )}
