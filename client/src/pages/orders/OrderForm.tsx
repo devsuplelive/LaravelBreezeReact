@@ -325,7 +325,7 @@ export default function OrderForm({ id }: OrderFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="0">None</SelectItem>
                           {Object.values(PAYMENT_METHODS).map((method) => (
                             <SelectItem key={method} value={method}>
                               {method.replace('_', ' ').split(' ').map(word => 
