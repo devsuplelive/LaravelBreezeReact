@@ -15,7 +15,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
-import AppLayout from '@/components/layouts/AppLayout';
 import { FiSave, FiArrowLeft } from 'react-icons/fi';
 
 // Esquema de validação usando Zod
@@ -91,53 +90,51 @@ const BrandForm = () => {
   };
 
   return (
-    <AppLayout>
-      <div className="container mx-auto py-6">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="icon" onClick={() => setLocation('/brands')}>
-                <FiArrowLeft />
+    <div className="container mx-auto py-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="icon" onClick={() => setLocation('/brands')}>
+              <FiArrowLeft />
+            </Button>
+            <CardTitle>{isEditing ? 'Editar Marca' : 'Nova Marca'}</CardTitle>
+          </div>
+        </CardHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nome da marca" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+            
+            <CardFooter className="flex justify-end gap-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setLocation('/brands')}
+              >
+                Cancelar
               </Button>
-              <CardTitle>{isEditing ? 'Editar Marca' : 'Nova Marca'}</CardTitle>
-            </div>
-          </CardHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-              <CardContent className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nome da marca" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-              
-              <CardFooter className="flex justify-end gap-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setLocation('/brands')}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit">
-                  <FiSave className="mr-2" />
-                  Salvar
-                </Button>
-              </CardFooter>
-            </form>
-          </Form>
-        </Card>
-      </div>
-    </AppLayout>
+              <Button type="submit">
+                <FiSave className="mr-2" />
+                Salvar
+              </Button>
+            </CardFooter>
+          </form>
+        </Form>
+      </Card>
+    </div>
   );
 };
 

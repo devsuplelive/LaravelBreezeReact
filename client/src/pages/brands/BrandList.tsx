@@ -18,7 +18,6 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { FiPlus, FiEdit, FiTrash2, FiSearch } from 'react-icons/fi';
-import AppLayout from '@/components/layouts/AppLayout';
 
 type Brand = {
   id: number;
@@ -81,83 +80,81 @@ const BrandList = () => {
   };
 
   return (
-    <AppLayout>
-      <div className="container mx-auto py-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Marcas</CardTitle>
-              <CardDescription>
-                Gerencie as marcas dos produtos da sua empresa.
-              </CardDescription>
+    <div className="container mx-auto py-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Marcas</CardTitle>
+            <CardDescription>
+              Gerencie as marcas dos produtos da sua empresa.
+            </CardDescription>
+          </div>
+          <Button onClick={() => setLocation('/brands/new')}>
+            <FiPlus className="mr-2" /> Nova Marca
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center mb-6">
+            <div className="relative w-full max-w-md">
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Buscar por nome..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
-            <Button onClick={() => setLocation('/brands/new')}>
-              <FiPlus className="mr-2" /> Nova Marca
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center mb-6">
-              <div className="relative w-full max-w-md">
-                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Buscar por nome..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
+          </div>
 
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Data de criação</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredBrands.length > 0 ? (
-                    filteredBrands.map((brand) => (
-                      <TableRow key={brand.id}>
-                        <TableCell className="font-medium">{brand.name}</TableCell>
-                        <TableCell>{new Date(brand.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleEdit(brand.id)}
-                            >
-                              <FiEdit />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleDelete(brand.id)}
-                            >
-                              <FiTrash2 />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={3} className="text-center py-6">
-                        Nenhuma marca encontrada.
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Data de criação</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredBrands.length > 0 ? (
+                  filteredBrands.map((brand) => (
+                    <TableRow key={brand.id}>
+                      <TableCell className="font-medium">{brand.name}</TableCell>
+                      <TableCell>{new Date(brand.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleEdit(brand.id)}
+                          >
+                            <FiEdit />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleDelete(brand.id)}
+                          >
+                            <FiTrash2 />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </AppLayout>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center py-6">
+                      Nenhuma marca encontrada.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
