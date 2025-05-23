@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { initializeDatabase } from "./db/sqlite";
+import { initializeDatabase, seedSampleData } from "./db/sqlite";
 
 const app = express();
 app.use(express.json());
@@ -42,6 +42,9 @@ app.use((req, res, next) => {
   try {
     initializeDatabase();
     console.log("Banco de dados SQLite inicializado com sucesso!");
+    
+    // Adicionar dados de exemplo
+    seedSampleData();
   } catch (error) {
     console.error("Erro ao inicializar banco de dados SQLite:", error);
   }

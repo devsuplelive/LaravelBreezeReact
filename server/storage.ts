@@ -14,7 +14,7 @@ import {
   shipping, type Shipping, type InsertShipping,
   OrderWithRelations, ProductWithRelations, UserWithRoles, RoleWithPermissions
 } from "@shared/schema";
-import { db } from "./db";
+import { db } from "./db/sqlite";
 import { eq, and, like, ilike, or, desc, asc, sql, isNull, not } from "drizzle-orm";
 import { hashPassword } from "./middlewares/auth";
 
