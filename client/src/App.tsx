@@ -23,6 +23,7 @@ import ShippingForm from "./pages/shipping/ShippingForm";
 import UserList from "./pages/user-management/UserList";
 import UserForm from "./pages/user-management/UserForm";
 import RoleList from "./pages/user-management/RoleList";
+import RoleForm from "./pages/user-management/RoleForm";
 import PermissionList from "./pages/user-management/PermissionList";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -148,6 +149,12 @@ function App() {
           </Route>
           <Route path="/roles">
             <RoleList />
+          </Route>
+          <Route path="/roles/new">
+            <RoleForm />
+          </Route>
+          <Route path="/roles/:id">
+            <RoleForm />
           </Route>
           <Route path="/permissions">
             <PermissionList />
