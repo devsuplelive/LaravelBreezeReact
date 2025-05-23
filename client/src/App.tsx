@@ -23,14 +23,8 @@ import ShippingForm from "./pages/shipping/ShippingForm";
 import UserList from "./pages/user-management/UserList";
 import RoleList from "./pages/user-management/RoleList";
 import PermissionList from "./pages/user-management/PermissionList";
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-
-function ProtectedRoute({ component: Component, permission }: { component: React.ComponentType, permission?: string }) {
-  // Para fins de demonstração, estamos pulando a verificação de autenticação e permissões
-  // Isso permite que o conteúdo seja exibido mesmo sem login
-  return <Component />;
-}
 
 function LoadingFallback() {
   return <div className="w-full h-screen flex items-center justify-center">
@@ -46,182 +40,118 @@ function App() {
 
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <Switch>
-        {/* Auth routes */}
-        <Route path="/login">
-          <Login />
-        </Route>
-        <Route path="/register">
-          <Register />
-        </Route>
+      <AppLayout>
+        <Switch>
+          {/* Auth routes */}
+          <Route path="/login">
+            <Login />
+          </Route>
+          <Route path="/register">
+            <Register />
+          </Route>
 
-        {/* Protected routes wrapped in AppLayout */}
-        <Route path="/">
-          <AppLayout>
-            <ProtectedRoute component={Dashboard} />
-          </AppLayout>
-        </Route>
+          {/* Dashboard - homepage */}
+          <Route path="/">
+            <Dashboard />
+          </Route>
 
-        {/* Customers */}
-        <Route path="/customers">
-          <AppLayout>
-            <ProtectedRoute component={CustomerList} permission="view_customers" />
-          </AppLayout>
-        </Route>
-        <Route path="/customers/new">
-          <AppLayout>
-            <ProtectedRoute component={CustomerForm} permission="create_customers" />
-          </AppLayout>
-        </Route>
-        <Route path="/customers/:id">
-          {(params) => (
-            <AppLayout>
-              <ProtectedRoute component={() => <CustomerForm id={Number(params.id)} />} permission="edit_customers" />
-            </AppLayout>
-          )}
-        </Route>
+          {/* Customers */}
+          <Route path="/customers">
+            <CustomerList />
+          </Route>
+          <Route path="/customers/new">
+            <CustomerForm />
+          </Route>
+          <Route path="/customers/:id">
+            <CustomerForm />
+          </Route>
 
-        {/* Brands */}
-        <Route path="/brands">
-          <AppLayout>
-            <ProtectedRoute component={BrandList} permission="view_brands" />
-          </AppLayout>
-        </Route>
-        <Route path="/brands/new">
-          <AppLayout>
-            <ProtectedRoute component={BrandForm} permission="create_brands" />
-          </AppLayout>
-        </Route>
-        <Route path="/brands/:id">
-          {(params) => (
-            <AppLayout>
-              <ProtectedRoute component={() => <BrandForm id={Number(params.id)} />} permission="edit_brands" />
-            </AppLayout>
-          )}
-        </Route>
+          {/* Brands */}
+          <Route path="/brands">
+            <BrandList />
+          </Route>
+          <Route path="/brands/new">
+            <BrandForm />
+          </Route>
+          <Route path="/brands/:id">
+            <BrandForm />
+          </Route>
 
-        {/* Categories */}
-        <Route path="/categories">
-          <AppLayout>
-            <ProtectedRoute component={CategoryList} permission="view_categories" />
-          </AppLayout>
-        </Route>
-        <Route path="/categories/new">
-          <AppLayout>
-            <ProtectedRoute component={CategoryForm} permission="create_categories" />
-          </AppLayout>
-        </Route>
-        <Route path="/categories/:id">
-          {(params) => (
-            <AppLayout>
-              <ProtectedRoute component={() => <CategoryForm id={Number(params.id)} />} permission="edit_categories" />
-            </AppLayout>
-          )}
-        </Route>
+          {/* Categories */}
+          <Route path="/categories">
+            <CategoryList />
+          </Route>
+          <Route path="/categories/new">
+            <CategoryForm />
+          </Route>
+          <Route path="/categories/:id">
+            <CategoryForm />
+          </Route>
 
-        {/* Products */}
-        <Route path="/products">
-          <AppLayout>
-            <ProtectedRoute component={ProductList} permission="view_products" />
-          </AppLayout>
-        </Route>
-        <Route path="/products/new">
-          <AppLayout>
-            <ProtectedRoute component={ProductForm} permission="create_products" />
-          </AppLayout>
-        </Route>
-        <Route path="/products/:id">
-          {(params) => (
-            <AppLayout>
-              <ProtectedRoute component={() => <ProductForm id={Number(params.id)} />} permission="edit_products" />
-            </AppLayout>
-          )}
-        </Route>
+          {/* Products */}
+          <Route path="/products">
+            <ProductList />
+          </Route>
+          <Route path="/products/new">
+            <ProductForm />
+          </Route>
+          <Route path="/products/:id">
+            <ProductForm />
+          </Route>
 
-        {/* Orders */}
-        <Route path="/orders">
-          <AppLayout>
-            <ProtectedRoute component={OrderList} permission="view_orders" />
-          </AppLayout>
-        </Route>
-        <Route path="/orders/new">
-          <AppLayout>
-            <ProtectedRoute component={OrderForm} permission="create_orders" />
-          </AppLayout>
-        </Route>
-        <Route path="/orders/:id/edit">
-          {(params) => (
-            <AppLayout>
-              <ProtectedRoute component={() => <OrderForm id={Number(params.id)} />} permission="edit_orders" />
-            </AppLayout>
-          )}
-        </Route>
-        <Route path="/orders/:id">
-          {(params) => (
-            <AppLayout>
-              <ProtectedRoute component={() => <OrderDetails id={Number(params.id)} />} permission="view_orders" />
-            </AppLayout>
-          )}
-        </Route>
+          {/* Orders */}
+          <Route path="/orders">
+            <OrderList />
+          </Route>
+          <Route path="/orders/new">
+            <OrderForm />
+          </Route>
+          <Route path="/orders/:id/edit">
+            <OrderForm />
+          </Route>
+          <Route path="/orders/:id">
+            <OrderDetails />
+          </Route>
 
-        {/* Payments */}
-        <Route path="/payments">
-          <AppLayout>
-            <ProtectedRoute component={PaymentList} permission="view_payments" />
-          </AppLayout>
-        </Route>
-        <Route path="/payments/new">
-          <AppLayout>
-            <ProtectedRoute component={PaymentForm} permission="create_payments" />
-          </AppLayout>
-        </Route>
-        <Route path="/payments/:id">
-          {(params) => (
-            <AppLayout>
-              <ProtectedRoute component={() => <PaymentForm id={Number(params.id)} />} permission="edit_payments" />
-            </AppLayout>
-          )}
-        </Route>
+          {/* Payments */}
+          <Route path="/payments">
+            <PaymentList />
+          </Route>
+          <Route path="/payments/new">
+            <PaymentForm />
+          </Route>
+          <Route path="/payments/:id">
+            <PaymentForm />
+          </Route>
 
-        {/* Shipping */}
-        <Route path="/shipping">
-          <AppLayout>
-            <ProtectedRoute component={ShippingList} permission="view_shipping" />
-          </AppLayout>
-        </Route>
-        <Route path="/shipping/new">
-          <AppLayout>
-            <ProtectedRoute component={ShippingForm} permission="create_shipping" />
-          </AppLayout>
-        </Route>
-        <Route path="/shipping/:id">
-          {(params) => (
-            <AppLayout>
-              <ProtectedRoute component={() => <ShippingForm id={Number(params.id)} />} permission="edit_shipping" />
-            </AppLayout>
-          )}
-        </Route>
+          {/* Shipping */}
+          <Route path="/shipping">
+            <ShippingList />
+          </Route>
+          <Route path="/shipping/new">
+            <ShippingForm />
+          </Route>
+          <Route path="/shipping/:id">
+            <ShippingForm />
+          </Route>
 
-        {/* User Management */}
-        <Route path="/users">
-          <AppLayout>
-            <ProtectedRoute component={UserList} permission="view_users" />
-          </AppLayout>
-        </Route>
-        <Route path="/roles">
-          <AppLayout>
-            <ProtectedRoute component={RoleList} permission="view_roles" />
-          </AppLayout>
-        </Route>
-        <Route path="/permissions">
-          <AppLayout>
-            <ProtectedRoute component={PermissionList} permission="view_permissions" />
-          </AppLayout>
-        </Route>
+          {/* User Management */}
+          <Route path="/users">
+            <UserList />
+          </Route>
+          <Route path="/roles">
+            <RoleList />
+          </Route>
+          <Route path="/permissions">
+            <PermissionList />
+          </Route>
 
-        {/* Fallback for 404 */}
-        <Route component={NotFound} />
-      </Switch>
+          {/* Fallback for 404 */}
+          <Route>
+            <NotFound />
+          </Route>
+        </Switch>
+      </AppLayout>
     </Suspense>
   );
 }
