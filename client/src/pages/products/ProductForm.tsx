@@ -223,7 +223,7 @@ export default function ProductForm({ id }: ProductFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="0">None</SelectItem>
                           {brandsData?.brands?.map((brand: { id: number; name: string }) => (
                             <SelectItem key={brand.id} value={brand.id.toString()}>
                               {brand.name}
@@ -251,7 +251,7 @@ export default function ProductForm({ id }: ProductFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="0">None</SelectItem>
                           {categoriesData?.categories?.map((category: { id: number; name: string }) => (
                             <SelectItem key={category.id} value={category.id.toString()}>
                               {category.name}
