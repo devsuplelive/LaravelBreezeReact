@@ -1,259 +1,277 @@
-import React, { useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocation } from "wouter";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { insertCustomerSchema } from "@shared/schema";
+import React, { useState, useEffect } from 'react';
+import { useLocation, useParams } from 'wouter';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from '@/hooks/use-toast';
+import AppLayout from '@/components/layouts/AppLayout';
+import { FiSave, FiArrowLeft } from 'react-icons/fi';
 
-// Extend the schema with form validation rules
-const customerFormSchema = insertCustomerSchema.extend({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
+// Esquema de validação usando Zod
+const customerSchema = z.object({
+  name: z.string().min(1, 'Nome é obrigatório'),
+  email: z.string().email('Email inválido'),
   phone: z.string().optional(),
   document: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
-  zipCode: z.string().optional(),
+  zip_code: z.string().optional(),
 });
 
-type CustomerFormValues = z.infer<typeof customerFormSchema>;
+type CustomerFormValues = z.infer<typeof customerSchema>;
 
-interface CustomerFormProps {
-  id?: number;
-}
+// Dados mockados para demonstração
+const mockCustomers = [
+  {
+    id: 1,
+    name: "João Silva",
+    email: "joao@example.com",
+    phone: "(11) 99999-8888",
+    document: "123.456.789-00",
+    address: "Rua das Flores, 123",
+    city: "São Paulo",
+    state: "SP",
+    zip_code: "01234-567",
+  },
+  {
+    id: 2,
+    name: "Maria Oliveira",
+    email: "maria@example.com",
+    phone: "(11) 97777-6666",
+    document: "987.654.321-00",
+    address: "Av. Paulista, 1000",
+    city: "São Paulo",
+    state: "SP",
+    zip_code: "01310-100",
+  }
+];
 
-export default function CustomerForm({ id }: CustomerFormProps) {
-  const [, setLocation] = useLocation();
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const isEditMode = !!id;
-
-  // Fetch customer data if in edit mode
-  const { data: customer, isLoading } = useQuery({
-    queryKey: ['/api/customers', id],
-    queryFn: async () => {
-      if (!id) return null;
-      const res = await fetch(`/api/customers/${id}`);
-      if (!res.ok) throw new Error('Failed to fetch customer');
-      return res.json();
-    },
-    enabled: isEditMode,
-  });
-
+const CustomerForm = () => {
+  const params = useParams();
+  const navigate = useNavigate();
+  const isEditing = Boolean(params.id);
+  const customerId = params.id ? parseInt(params.id) : null;
+  
+  // Inicializa o formulário com react-hook-form
   const form = useForm<CustomerFormValues>({
-    resolver: zodResolver(customerFormSchema),
+    resolver: zodResolver(customerSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      document: "",
-      address: "",
-      city: "",
-      state: "",
-      zipCode: "",
+      name: '',
+      email: '',
+      phone: '',
+      document: '',
+      address: '',
+      city: '',
+      state: '',
+      zip_code: '',
     },
   });
 
-  // Update form when customer data is loaded
+  // Carrega os dados do cliente se estiver editando
   useEffect(() => {
-    if (customer) {
-      form.reset(customer);
+    if (isEditing && customerId) {
+      // Simulação de carregamento de dados
+      const customer = mockCustomers.find(c => c.id === customerId);
+      
+      if (customer) {
+        form.reset({
+          name: customer.name,
+          email: customer.email,
+          phone: customer.phone || '',
+          document: customer.document || '',
+          address: customer.address || '',
+          city: customer.city || '',
+          state: customer.state || '',
+          zip_code: customer.zip_code || '',
+        });
+      }
     }
-  }, [customer, form]);
+  }, [isEditing, customerId, form]);
 
   const onSubmit = async (data: CustomerFormValues) => {
     try {
-      if (isEditMode) {
-        await apiRequest('PUT', `/api/customers/${id}`, data);
-        toast({
-          title: 'Success',
-          description: 'Customer updated successfully',
-        });
-      } else {
-        await apiRequest('POST', '/api/customers', data);
-        toast({
-          title: 'Success',
-          description: 'Customer created successfully',
-        });
-      }
+      // Aqui seria feita a chamada à API para salvar os dados
+      console.log('Dados do cliente para salvar:', data);
       
-      // Invalidate the customers query and redirect
-      queryClient.invalidateQueries({ queryKey: ['/api/customers'] });
-      setLocation("/customers");
-    } catch (error) {
       toast({
-        title: 'Error',
-        description: isEditMode ? 'Failed to update customer' : 'Failed to create customer',
-        variant: 'destructive',
+        title: isEditing ? "Cliente atualizado" : "Cliente criado",
+        description: `${data.name} foi ${isEditing ? 'atualizado' : 'adicionado'} com sucesso.`,
+      });
+      
+      navigate('/customers');
+    } catch (error) {
+      console.error('Erro ao salvar cliente:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Ocorreu um erro ao salvar o cliente. Tente novamente.",
       });
     }
   };
 
-  if (isEditMode && isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
-    <div>
-      <div className="mb-6">
-        <Button variant="ghost" onClick={() => setLocation("/customers")} className="mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Customers
-        </Button>
-        <h1 className="text-2xl font-bold">{isEditMode ? 'Edit Customer' : 'Add Customer'}</h1>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{isEditMode ? 'Edit Customer Information' : 'Customer Information'}</CardTitle>
-        </CardHeader>
-        <CardContent>
+    <AppLayout>
+      <div className="container mx-auto py-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="icon" onClick={() => navigate('/customers')}>
+                <FiArrowLeft />
+              </Button>
+              <CardTitle>{isEditing ? 'Editar Cliente' : 'Novo Cliente'}</CardTitle>
+            </div>
+          </CardHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="John Doe" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="john.doe@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone</FormLabel>
-                      <FormControl>
-                        <Input placeholder="(555) 123-4567" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="document"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Document</FormLabel>
-                      <FormControl>
-                        <Input placeholder="ID, Tax Number, etc." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nome completo" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="email@exemplo.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <div className="grid grid-cols-1 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Telefone</FormLabel>
+                        <FormControl>
+                          <Input placeholder="(00) 00000-0000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="document"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CPF/CNPJ</FormLabel>
+                        <FormControl>
+                          <Input placeholder="000.000.000-00" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <FormField
                   control={form.control}
                   name="address"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Address</FormLabel>
+                      <FormLabel>Endereço</FormLabel>
                       <FormControl>
-                        <Input placeholder="123 Main St" {...field} />
+                        <Input placeholder="Rua, número, complemento" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>City</FormLabel>
-                      <FormControl>
-                        <Input placeholder="New York" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="state"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>State</FormLabel>
-                      <FormControl>
-                        <Input placeholder="NY" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="zipCode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Zip Code</FormLabel>
-                      <FormControl>
-                        <Input placeholder="10001" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="city"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cidade</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Cidade" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <CardFooter className="px-0 pt-6">
-                <Button type="submit" className="mr-2">
-                  {form.formState.isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {isEditMode ? 'Updating...' : 'Saving...'}
-                    </>
-                  ) : (
-                    isEditMode ? 'Update Customer' : 'Create Customer'
-                  )}
+                  <FormField
+                    control={form.control}
+                    name="state"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Estado</FormLabel>
+                        <FormControl>
+                          <Input placeholder="UF" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="zip_code"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CEP</FormLabel>
+                        <FormControl>
+                          <Input placeholder="00000-000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+              
+              <CardFooter className="flex justify-end gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => navigate('/customers')}
+                >
+                  Cancelar
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setLocation("/customers")}>
-                  Cancel
+                <Button type="submit">
+                  <FiSave className="mr-2" />
+                  Salvar
                 </Button>
               </CardFooter>
             </form>
           </Form>
-        </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </AppLayout>
   );
-}
+};
+
+export default CustomerForm;

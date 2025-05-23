@@ -1,169 +1,200 @@
-import React, { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocation } from "wouter";
-import { DataTable } from "@/components/ui/data-table";
-import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Plus } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Customer } from "@shared/schema";
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { FiPlus, FiEdit, FiTrash2, FiSearch, FiEye } from 'react-icons/fi';
+import AppLayout from '@/components/layouts/AppLayout';
 
-export default function CustomerList() {
+type Customer = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  document: string;
+  address: string;
+  city: string;
+  state: string;
+  zip_code: string;
+  created_at: string;
+  updated_at: string;
+};
+
+const CustomerList = () => {
+  const [searchTerm, setSearchTerm] = useState('');
   const [, setLocation] = useLocation();
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [deleteCustomerId, setDeleteCustomerId] = useState<number | null>(null);
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['/api/customers', page, pageSize, searchTerm],
-    queryFn: async () => {
-      const res = await fetch(`/api/customers?page=${page}&limit=${pageSize}&search=${searchTerm}`);
-      if (!res.ok) throw new Error('Failed to fetch customers');
-      return res.json();
+  // Dados estáticos para demonstração
+  const customers: Customer[] = [
+    {
+      id: 1,
+      name: "João Silva",
+      email: "joao@example.com",
+      phone: "(11) 99999-8888",
+      document: "123.456.789-00",
+      address: "Rua das Flores, 123",
+      city: "São Paulo",
+      state: "SP",
+      zip_code: "01234-567",
+      created_at: "2023-05-10T10:00:00",
+      updated_at: "2023-05-10T10:00:00"
+    },
+    {
+      id: 2,
+      name: "Maria Oliveira",
+      email: "maria@example.com",
+      phone: "(11) 97777-6666",
+      document: "987.654.321-00",
+      address: "Av. Paulista, 1000",
+      city: "São Paulo",
+      state: "SP",
+      zip_code: "01310-100",
+      created_at: "2023-05-15T14:30:00",
+      updated_at: "2023-05-15T14:30:00"
+    },
+    {
+      id: 3,
+      name: "Carlos Santos",
+      email: "carlos@example.com",
+      phone: "(21) 98888-7777",
+      document: "111.222.333-44",
+      address: "Rua do Comércio, 45",
+      city: "Rio de Janeiro",
+      state: "RJ",
+      zip_code: "20010-020",
+      created_at: "2023-05-20T09:15:00",
+      updated_at: "2023-05-20T09:15:00"
     }
-  });
-
-  const handleDelete = async () => {
-    if (!deleteCustomerId) return;
-    
-    try {
-      await apiRequest('DELETE', `/api/customers/${deleteCustomerId}`);
-      
-      toast({
-        title: 'Success',
-        description: 'Customer deleted successfully',
-      });
-      
-      // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ['/api/customers'] });
-      setDeleteCustomerId(null);
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete customer',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    setPage(1); // Reset to first page when searching
-  };
-
-  const columns = [
-    {
-      header: "Name",
-      accessorKey: "name",
-    },
-    {
-      header: "Email",
-      accessorKey: "email",
-    },
-    {
-      header: "Phone",
-      accessorKey: "phone",
-      cell: (row: Customer) => row.phone || "—",
-    },
-    {
-      header: "City",
-      accessorKey: "city",
-      cell: (row: Customer) => row.city || "—",
-    },
-    {
-      header: "State",
-      accessorKey: "state",
-      cell: (row: Customer) => row.state || "—",
-    },
-    {
-      header: "Actions",
-      accessorKey: "id",
-      cell: (row: Customer) => (
-        <div className="flex space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              setLocation(`/customers/${row.id}`);
-            }}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeleteCustomerId(row.id);
-            }}
-          >
-            <Trash2 className="h-4 w-4 text-red-500" />
-          </Button>
-        </div>
-      ),
-    },
   ];
 
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Customers</h1>
-        <Button onClick={() => setLocation("/customers/new")}>
-          <Plus className="h-4 w-4 mr-2" /> Add Customer
-        </Button>
-      </div>
-
-      <DataTable
-        data={data?.customers || []}
-        columns={columns}
-        onSearch={handleSearch}
-        searchPlaceholder="Search customers..."
-        pagination={{
-          pageIndex: page - 1,
-          pageCount: Math.ceil((data?.total || 0) / pageSize),
-          pageSize,
-          onPageChange: (newPage) => setPage(newPage + 1),
-          onPageSizeChange: (newSize) => {
-            setPageSize(newSize);
-            setPage(1);
-          },
-        }}
-        isLoading={isLoading}
-        onRefresh={refetch}
-        onRowClick={(row) => setLocation(`/customers/${row.id}`)}
-      />
-
-      <AlertDialog open={!!deleteCustomerId} onOpenChange={() => setDeleteCustomerId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              customer and related records.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+  const filteredCustomers = customers.filter(customer => 
+    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.phone.includes(searchTerm)
   );
-}
+
+  const handleView = (id: number) => {
+    setLocation(`/customers/${id}`);
+  };
+
+  const handleEdit = (id: number) => {
+    setLocation(`/customers/${id}/edit`);
+  };
+
+  const handleDelete = (id: number) => {
+    if (window.confirm('Tem certeza que deseja excluir este cliente?')) {
+      // Lógica para excluir o cliente seria implementada aqui
+      console.log(`Excluindo cliente ${id}`);
+    }
+  };
+
+  return (
+    <AppLayout>
+      <div className="container mx-auto py-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Clientes</CardTitle>
+              <CardDescription>
+                Gerencie os clientes da sua empresa.
+              </CardDescription>
+            </div>
+            <Button onClick={() => setLocation('/customers/new')}>
+              <FiPlus className="mr-2" /> Novo Cliente
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center mb-6">
+              <div className="relative w-full max-w-md">
+                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Buscar por nome, email ou telefone..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Telefone</TableHead>
+                    <TableHead>Cidade</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredCustomers.length > 0 ? (
+                    filteredCustomers.map((customer) => (
+                      <TableRow key={customer.id}>
+                        <TableCell className="font-medium">{customer.name}</TableCell>
+                        <TableCell>{customer.email}</TableCell>
+                        <TableCell>{customer.phone}</TableCell>
+                        <TableCell>{customer.city}</TableCell>
+                        <TableCell>{customer.state}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleView(customer.id)}
+                            >
+                              <FiEye />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleEdit(customer.id)}
+                            >
+                              <FiEdit />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleDelete(customer.id)}
+                            >
+                              <FiTrash2 />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-6">
+                        Nenhum cliente encontrado.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </AppLayout>
+  );
+};
+
+export default CustomerList;
