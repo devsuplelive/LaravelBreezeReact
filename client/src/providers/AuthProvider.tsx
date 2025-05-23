@@ -70,6 +70,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     checkAuthStatus();
+    
+    // Temporariamente definindo um usuário padrão para fins de demonstração
+    if (!user) {
+      setUser({
+        id: 1,
+        username: 'admin',
+        email: 'admin@example.com'
+      });
+      setRoles([{ id: 1, name: 'admin' }]);
+      setPermissions(['view_dashboard', 'view_customers', 'view_brands', 'view_categories', 'view_products', 'view_orders', 'view_payments', 'view_shipping']);
+      setLoading(false);
+    }
   }, []);
 
   const handleLogin = async (username: string, password: string) => {
