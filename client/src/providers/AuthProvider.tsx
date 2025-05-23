@@ -9,6 +9,8 @@ type User = {
   email: string;
   firstName?: string;
   lastName?: string;
+  active?: boolean;
+  roles?: { id: number; name: string }[];
 };
 
 type AuthContextType = {
@@ -20,6 +22,7 @@ type AuthContextType = {
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   register: (userData: { username: string; email: string; password: string; firstName?: string; lastName?: string }) => Promise<void>;
+  updateUserInfo: (userData: User) => void;
   hasPermission: (permission: string) => boolean;
   hasRole: (role: string) => boolean;
 };
@@ -33,6 +36,7 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   logout: () => {},
   register: async () => {},
+  updateUserInfo: () => {},
   hasPermission: () => false,
   hasRole: () => false,
 });
@@ -155,6 +159,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return true;
   };
 
+  const handleUpdateUserInfo = (userData: User) => {
+    try {
+      setUser(userData);
+      
+      // Aqui poderia ser feita uma chamada à API para atualizar os dados no backend
+      console.log('Dados do usuário atualizados:', userData);
+      
+      toast({
+        title: "Perfil atualizado",
+        description: "Seus dados foram atualizados com sucesso.",
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar usuário:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Não foi possível atualizar o perfil. Tente novamente.",
+      });
+    }
+  };
+
   const value = {
     user,
     roles,
@@ -164,6 +189,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     login: handleLogin,
     logout: handleLogout,
     register: handleRegister,
+    updateUserInfo: handleUpdateUserInfo,
     hasPermission,
     hasRole,
   };
