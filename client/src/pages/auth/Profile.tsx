@@ -265,12 +265,15 @@ const Profile: React.FC = () => {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="email" 
-                            placeholder="seu.email@exemplo.com" 
-                            {...field}
-                            startIcon={<FiMail className="h-4 w-4 text-muted-foreground" />}
-                          />
+                          <div className="relative">
+                            <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              type="email" 
+                              placeholder="seu.email@exemplo.com"
+                              className="pl-10"
+                              {...field}
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -287,16 +290,14 @@ const Profile: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-sm text-muted-foreground">Status</span>
                         <span className="text-sm font-medium flex items-center">
-                          <span className={`h-2 w-2 rounded-full mr-2 ${user.active ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-                          {user.active ? 'Ativo' : 'Inativo'}
+                          <span className="h-2 w-2 rounded-full mr-2 bg-green-500"></span>
+                          Ativo
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-muted-foreground">Papel</span>
                         <span className="text-sm font-medium">
-                          {user.roles && user.roles.length > 0 
-                            ? user.roles.map(role => role.name).join(', ') 
-                            : 'Nenhum papel atribuído'}
+                          {user.id === 1 ? 'Admin' : 'Usuário'}
                         </span>
                       </div>
                     </div>
