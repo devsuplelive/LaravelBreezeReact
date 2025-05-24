@@ -29,24 +29,28 @@ import PermissionList from "./pages/user-management/PermissionList";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Componente de carregamento
 function LoadingFallback() {
-  return <div className="w-full h-screen flex items-center justify-center">
-    <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      <p className="mt-4 text-gray-600">Loading...</p>
+  return (
+    <div className="w-full h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <p className="mt-4 text-gray-600">Carregando...</p>
+      </div>
     </div>
-  </div>;
+  );
 }
 
+// Componente principal do aplicativo
 function App() {
   const { isAuthenticated, loading } = useAuth();
-
-  // Se estiver carregando, mostra o fallback
+  
+  // Mostrar carregamento enquanto verifica a autenticação
   if (loading) {
     return <LoadingFallback />;
   }
-
-  // Usuário não autenticado - Mostra apenas telas de login/registro
+  
+  // Se não estiver autenticado, mostrar apenas telas de login/registro
   if (!isAuthenticated) {
     return (
       <Suspense fallback={<LoadingFallback />}>
@@ -64,8 +68,8 @@ function App() {
       </Suspense>
     );
   }
-
-  // Usuário autenticado - Mostra as telas do sistema
+  
+  // Se estiver autenticado, mostrar o layout completo com o menu
   return (
     <Suspense fallback={<LoadingFallback />}>
       <AppLayout>
@@ -73,12 +77,12 @@ function App() {
           <Route path="/profile">
             <Profile />
           </Route>
-
-          {/* Dashboard - homepage */}
+          
+          {/* Dashboard */}
           <Route path="/">
             <Dashboard />
           </Route>
-
+          
           {/* Customers */}
           <Route path="/customers">
             <CustomerList />
@@ -89,7 +93,7 @@ function App() {
           <Route path="/customers/:id">
             <CustomerForm />
           </Route>
-
+          
           {/* Brands */}
           <Route path="/brands">
             <BrandList />
@@ -100,7 +104,7 @@ function App() {
           <Route path="/brands/:id">
             <BrandForm />
           </Route>
-
+          
           {/* Categories */}
           <Route path="/categories">
             <CategoryList />
@@ -111,7 +115,7 @@ function App() {
           <Route path="/categories/:id">
             <CategoryForm />
           </Route>
-
+          
           {/* Products */}
           <Route path="/products">
             <ProductList />
@@ -122,7 +126,7 @@ function App() {
           <Route path="/products/:id">
             <ProductForm />
           </Route>
-
+          
           {/* Orders */}
           <Route path="/orders">
             <OrderList />
@@ -136,7 +140,7 @@ function App() {
           <Route path="/orders/:id">
             <OrderDetails />
           </Route>
-
+          
           {/* Payments */}
           <Route path="/payments">
             <PaymentList />
@@ -147,7 +151,7 @@ function App() {
           <Route path="/payments/:id">
             <PaymentForm />
           </Route>
-
+          
           {/* Shipping */}
           <Route path="/shipping">
             <ShippingList />
@@ -158,7 +162,7 @@ function App() {
           <Route path="/shipping/:id">
             <ShippingForm />
           </Route>
-
+          
           {/* User Management */}
           <Route path="/users">
             <UserList />
@@ -181,8 +185,8 @@ function App() {
           <Route path="/permissions">
             <PermissionList />
           </Route>
-
-          {/* Fallback for 404 */}
+          
+          {/* Fallback 404 */}
           <Route>
             <NotFound />
           </Route>
