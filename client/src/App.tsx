@@ -27,7 +27,6 @@ import RoleList from "./pages/user-management/RoleList";
 import RoleForm from "./pages/user-management/RoleForm";
 import PermissionList from "./pages/user-management/PermissionList";
 import { Suspense } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 
 // Componente de carregamento
 function LoadingFallback() {
@@ -41,157 +40,162 @@ function LoadingFallback() {
   );
 }
 
+// Rotas públicas (login, registro)
+function PublicRoutes() {
+  return (
+    <Switch>
+      <Route path="/login">
+        <Login />
+      </Route>
+      <Route path="/register">
+        <Register />
+      </Route>
+      <Route>
+        <Login />
+      </Route>
+    </Switch>
+  );
+}
+
+// Rotas protegidas (dashboard, etc.)
+function ProtectedRoutes() {
+  return (
+    <AppLayout>
+      <Switch>
+        <Route path="/profile">
+          <Profile />
+        </Route>
+        
+        {/* Dashboard */}
+        <Route path="/">
+          <Dashboard />
+        </Route>
+        
+        {/* Customers */}
+        <Route path="/customers">
+          <CustomerList />
+        </Route>
+        <Route path="/customers/new">
+          <CustomerForm />
+        </Route>
+        <Route path="/customers/:id">
+          <CustomerForm />
+        </Route>
+        
+        {/* Brands */}
+        <Route path="/brands">
+          <BrandList />
+        </Route>
+        <Route path="/brands/new">
+          <BrandForm />
+        </Route>
+        <Route path="/brands/:id">
+          <BrandForm />
+        </Route>
+        
+        {/* Categories */}
+        <Route path="/categories">
+          <CategoryList />
+        </Route>
+        <Route path="/categories/new">
+          <CategoryForm />
+        </Route>
+        <Route path="/categories/:id">
+          <CategoryForm />
+        </Route>
+        
+        {/* Products */}
+        <Route path="/products">
+          <ProductList />
+        </Route>
+        <Route path="/products/new">
+          <ProductForm />
+        </Route>
+        <Route path="/products/:id">
+          <ProductForm />
+        </Route>
+        
+        {/* Orders */}
+        <Route path="/orders">
+          <OrderList />
+        </Route>
+        <Route path="/orders/new">
+          <OrderForm />
+        </Route>
+        <Route path="/orders/:id/edit">
+          <OrderForm />
+        </Route>
+        <Route path="/orders/:id">
+          <OrderDetails />
+        </Route>
+        
+        {/* Payments */}
+        <Route path="/payments">
+          <PaymentList />
+        </Route>
+        <Route path="/payments/new">
+          <PaymentForm />
+        </Route>
+        <Route path="/payments/:id">
+          <PaymentForm />
+        </Route>
+        
+        {/* Shipping */}
+        <Route path="/shipping">
+          <ShippingList />
+        </Route>
+        <Route path="/shipping/new">
+          <ShippingForm />
+        </Route>
+        <Route path="/shipping/:id">
+          <ShippingForm />
+        </Route>
+        
+        {/* User Management */}
+        <Route path="/users">
+          <UserList />
+        </Route>
+        <Route path="/users/new">
+          <UserForm />
+        </Route>
+        <Route path="/users/:id">
+          <UserForm />
+        </Route>
+        <Route path="/roles">
+          <RoleList />
+        </Route>
+        <Route path="/roles/new">
+          <RoleForm />
+        </Route>
+        <Route path="/roles/:id">
+          <RoleForm />
+        </Route>
+        <Route path="/permissions">
+          <PermissionList />
+        </Route>
+        
+        {/* Fallback 404 */}
+        <Route>
+          <NotFound />
+        </Route>
+      </Switch>
+    </AppLayout>
+  );
+}
+
 // Componente principal do aplicativo
 function App() {
   const { isAuthenticated, loading } = useAuth();
   
-  // Mostrar carregamento enquanto verifica a autenticação
+  // Enquanto carrega, mostra o indicador de carregamento
   if (loading) {
     return <LoadingFallback />;
   }
   
-  // Se não estiver autenticado, mostrar apenas telas de login/registro
-  if (!isAuthenticated) {
-    return (
-      <Suspense fallback={<LoadingFallback />}>
-        <Switch>
-          <Route path="/login">
-            <Login />
-          </Route>
-          <Route path="/register">
-            <Register />
-          </Route>
-          <Route>
-            <Login />
-          </Route>
-        </Switch>
-      </Suspense>
-    );
-  }
-  
-  // Se estiver autenticado, mostrar o layout completo com o menu
+  // Após o carregamento, decide quais rotas mostrar com base na autenticação
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <AppLayout>
-        <Switch>
-          <Route path="/profile">
-            <Profile />
-          </Route>
-          
-          {/* Dashboard */}
-          <Route path="/">
-            <Dashboard />
-          </Route>
-          
-          {/* Customers */}
-          <Route path="/customers">
-            <CustomerList />
-          </Route>
-          <Route path="/customers/new">
-            <CustomerForm />
-          </Route>
-          <Route path="/customers/:id">
-            <CustomerForm />
-          </Route>
-          
-          {/* Brands */}
-          <Route path="/brands">
-            <BrandList />
-          </Route>
-          <Route path="/brands/new">
-            <BrandForm />
-          </Route>
-          <Route path="/brands/:id">
-            <BrandForm />
-          </Route>
-          
-          {/* Categories */}
-          <Route path="/categories">
-            <CategoryList />
-          </Route>
-          <Route path="/categories/new">
-            <CategoryForm />
-          </Route>
-          <Route path="/categories/:id">
-            <CategoryForm />
-          </Route>
-          
-          {/* Products */}
-          <Route path="/products">
-            <ProductList />
-          </Route>
-          <Route path="/products/new">
-            <ProductForm />
-          </Route>
-          <Route path="/products/:id">
-            <ProductForm />
-          </Route>
-          
-          {/* Orders */}
-          <Route path="/orders">
-            <OrderList />
-          </Route>
-          <Route path="/orders/new">
-            <OrderForm />
-          </Route>
-          <Route path="/orders/:id/edit">
-            <OrderForm />
-          </Route>
-          <Route path="/orders/:id">
-            <OrderDetails />
-          </Route>
-          
-          {/* Payments */}
-          <Route path="/payments">
-            <PaymentList />
-          </Route>
-          <Route path="/payments/new">
-            <PaymentForm />
-          </Route>
-          <Route path="/payments/:id">
-            <PaymentForm />
-          </Route>
-          
-          {/* Shipping */}
-          <Route path="/shipping">
-            <ShippingList />
-          </Route>
-          <Route path="/shipping/new">
-            <ShippingForm />
-          </Route>
-          <Route path="/shipping/:id">
-            <ShippingForm />
-          </Route>
-          
-          {/* User Management */}
-          <Route path="/users">
-            <UserList />
-          </Route>
-          <Route path="/users/new">
-            <UserForm />
-          </Route>
-          <Route path="/users/:id">
-            <UserForm />
-          </Route>
-          <Route path="/roles">
-            <RoleList />
-          </Route>
-          <Route path="/roles/new">
-            <RoleForm />
-          </Route>
-          <Route path="/roles/:id">
-            <RoleForm />
-          </Route>
-          <Route path="/permissions">
-            <PermissionList />
-          </Route>
-          
-          {/* Fallback 404 */}
-          <Route>
-            <NotFound />
-          </Route>
-        </Switch>
-      </AppLayout>
+      {isAuthenticated ? <ProtectedRoutes /> : <PublicRoutes />}
     </Suspense>
   );
 }
