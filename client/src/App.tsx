@@ -185,14 +185,11 @@ function ProtectedRoutes() {
 
 // Componente principal do aplicativo
 function App() {
-  const { isAuthenticated, loading } = useAuth();
+  // Simplificando ainda mais removendo o hook useAuth
+  // Verifica diretamente se existe um token no localStorage
+  const isAuthenticated = localStorage.getItem('auth_token') !== null;
   
-  // Enquanto carrega, mostra o indicador de carregamento
-  if (loading) {
-    return <LoadingFallback />;
-  }
-  
-  // Após o carregamento, decide quais rotas mostrar com base na autenticação
+  // Sem checagem de carregamento para evitar o loop
   return (
     <Suspense fallback={<LoadingFallback />}>
       {isAuthenticated ? <ProtectedRoutes /> : <PublicRoutes />}
