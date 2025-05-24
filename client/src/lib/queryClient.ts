@@ -12,9 +12,23 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  // Recupera o token de autenticação do localStorage
+  const token = localStorage.getItem('auth_token');
+  
+  // Prepara os headers com o token de autenticação
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  
+  // Adiciona o token de autenticação se existir
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  
+  // Realiza a requisição com os headers apropriados
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers: headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -29,11 +43,25 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    // Recupera o token de autenticação do localStorage
+    const token = localStorage.getItem('auth_token');
+    
+    // Prepara os headers com o token de autenticação
+    const headers: Record<string, string> = {};
+    
+    // Adiciona o token de autenticação se existir
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",
+      headers: headers
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+      // Se o token for inválido, remove-o
+      localStorage.removeItem('auth_token');
       return null;
     }
 
