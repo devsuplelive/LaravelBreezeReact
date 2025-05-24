@@ -39,19 +39,37 @@ function LoadingFallback() {
 }
 
 function App() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
-  return (
-    <Suspense fallback={<LoadingFallback />}>
-      <AppLayout>
+  // Se estiver carregando, mostra o fallback
+  if (loading) {
+    return <LoadingFallback />;
+  }
+
+  // Usuário não autenticado - Mostra apenas telas de login/registro
+  if (!isAuthenticated) {
+    return (
+      <Suspense fallback={<LoadingFallback />}>
         <Switch>
-          {/* Auth routes */}
           <Route path="/login">
             <Login />
           </Route>
           <Route path="/register">
             <Register />
           </Route>
+          <Route>
+            <Login />
+          </Route>
+        </Switch>
+      </Suspense>
+    );
+  }
+
+  // Usuário autenticado - Mostra as telas do sistema
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <AppLayout>
+        <Switch>
           <Route path="/profile">
             <Profile />
           </Route>
