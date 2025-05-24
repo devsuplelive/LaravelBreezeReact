@@ -5,10 +5,10 @@ import { relations } from "drizzle-orm";
 import { ORDER_STATUS, PAYMENT_METHODS, SHIPPING_STATUS, USER_ROLES } from "./constants";
 
 // Enums (MySQL usa enum diferente do PostgreSQL)
-export const orderStatusEnum = mysqlEnum('order_status', Object.values(ORDER_STATUS));
-export const paymentMethodEnum = mysqlEnum('payment_method', Object.values(PAYMENT_METHODS));
-export const shippingStatusEnum = mysqlEnum('shipping_status', Object.values(SHIPPING_STATUS));
-export const userRoleEnum = mysqlEnum('user_role', Object.values(USER_ROLES));
+export const orderStatusEnum = mysqlEnum('order_status', ['pending', 'paid', 'shipped', 'delivered', 'cancelled']);
+export const paymentMethodEnum = mysqlEnum('payment_method', ['credit_card', 'debit_card', 'bank_transfer', 'paypal', 'cash', 'other']);
+export const shippingStatusEnum = mysqlEnum('shipping_status', ['pending', 'shipped', 'delivered', 'processing', 'returned']);
+export const userRoleEnum = mysqlEnum('user_role', ['admin', 'manager', 'sales', 'viewer']);
 
 // Users
 export const users = mysqlTable("users", {
@@ -167,11 +167,11 @@ export const orders = mysqlTable("orders", {
   id: int("id").primaryKey().autoincrement(),
   customerId: int("customer_id").notNull().references(() => customers.id),
   orderNumber: varchar("order_number", { length: 255 }).notNull().unique(),
-  status: orderStatusEnum("status").notNull().default('pending'),
+  status: varchar("status", { length: 20 }).notNull().default('pending'),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   discount: decimal("discount", { precision: 10, scale: 2 }).default('0'),
   shippingCost: decimal("shipping_cost", { precision: 10, scale: 2 }).default('0'),
-  paymentMethod: paymentMethodEnum("payment_method"),
+  paymentMethod: varchar("payment_method", { length: 20 }),
   notes: text("notes"),
   orderedAt: timestamp("ordered_at").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -216,7 +216,7 @@ export const payments = mysqlTable("payments", {
   id: int("id").primaryKey().autoincrement(),
   orderId: int("order_id").notNull().references(() => orders.id),
   paymentDate: timestamp("payment_date").defaultNow().notNull(),
-  paymentMethod: paymentMethodEnum("payment_method").notNull(),
+  paymentMethod: varchar("payment_method", { length: 20 }).notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   transactionCode: varchar("transaction_code", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -238,7 +238,7 @@ export const shipping = mysqlTable("shipping", {
   trackingCode: varchar("tracking_code", { length: 255 }),
   shippedAt: timestamp("shipped_at"),
   deliveredAt: timestamp("delivered_at"),
-  shippingStatus: shippingStatusEnum("shipping_status").notNull().default('pending'),
+  shippingStatus: varchar("shipping_status", { length: 20 }).notNull().default('pending'),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -251,74 +251,78 @@ export const shippingRelations = relations(shipping, ({ one }) => ({
 }));
 
 // Insert schemas
-export const insertUserSchema = createInsertSchema(users).omit({ 
-  id: true, 
-  createdAt: true, 
-  updatedAt: true 
+export const insertUserSchema = createInsertSchema(users, {
+  id: z.number().optional(),
+  createdAt: z.date().optional(), 
+  updatedAt: z.date().optional(),
 });
 
-export const insertRoleSchema = createInsertSchema(roles).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
+export const insertRoleSchema = createInsertSchema(roles, {
+  id: z.number().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
 });
 
-export const insertPermissionSchema = createInsertSchema(permissions).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
+export const insertPermissionSchema = createInsertSchema(permissions, {
+  id: z.number().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
 });
 
 export const insertUserRoleSchema = createInsertSchema(userRoles);
 
 export const insertRolePermissionSchema = createInsertSchema(rolePermissions);
 
-export const insertCustomerSchema = createInsertSchema(customers).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
+export const insertCustomerSchema = createInsertSchema(customers, {
+  id: z.number().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
 });
 
-export const insertBrandSchema = createInsertSchema(brands).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
+export const insertBrandSchema = createInsertSchema(brands, {
+  id: z.number().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
 });
 
-export const insertCategorySchema = createInsertSchema(categories).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
+export const insertCategorySchema = createInsertSchema(categories, {
+  id: z.number().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
 });
 
-export const insertProductSchema = createInsertSchema(products).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
+export const insertProductSchema = createInsertSchema(products, {
+  id: z.number().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
 });
 
-export const insertOrderSchema = createInsertSchema(orders).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
+export const insertOrderSchema = createInsertSchema(orders, {
+  id: z.number().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+  orderedAt: z.date().optional(),
 });
 
-export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
+export const insertOrderItemSchema = createInsertSchema(orderItems, {
+  id: z.number().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
 });
 
-export const insertPaymentSchema = createInsertSchema(payments).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
+export const insertPaymentSchema = createInsertSchema(payments, {
+  id: z.number().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+  paymentDate: z.date().optional(),
 });
 
-export const insertShippingSchema = createInsertSchema(shipping).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
+export const insertShippingSchema = createInsertSchema(shipping, {
+  id: z.number().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+  shippedAt: z.date().optional(),
+  deliveredAt: z.date().optional(),
 });
 
 // Types
