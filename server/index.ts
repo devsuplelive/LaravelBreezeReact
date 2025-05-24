@@ -2,6 +2,11 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeDatabase, seedSampleData } from "./db/sqlite";
+import { getDbConnection } from "./db";
+import dotenv from 'dotenv';
+
+// Carregar variáveis de ambiente do arquivo .env
+dotenv.config();
 
 const app = express();
 app.use(express.json());
@@ -38,15 +43,37 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Inicializar o banco de dados SQLite
+  // Tentar conectar ao MySQL ou PostgreSQL primeiro
+  let dbConnection = null;
+  
   try {
-    initializeDatabase();
-    console.log("Banco de dados SQLite inicializado com sucesso!");
-    
-    // Adicionar dados de exemplo
-    seedSampleData();
+    if (process.env.DB_HOST || process.env.DATABASE_URL) {
+      console.log("Tentando conectar ao banco de dados MySQL ou PostgreSQL...");
+      dbConnection = await getDbConnection();
+      
+      if (dbConnection) {
+        console.log(`Banco de dados ${dbConnection.type} conectado com sucesso!`);
+        // O banco de dados já está inicializado e pronto para uso
+        // Você poderia executar migrações aqui se necessário
+      }
+    }
   } catch (error) {
-    console.error("Erro ao inicializar banco de dados SQLite:", error);
+    console.error("Erro ao conectar ao banco de dados externo:", error);
+    console.log("Usando SQLite como fallback...");
+    dbConnection = null;
+  }
+  
+  // Se não conseguir conectar ao banco externo, usar SQLite
+  if (!dbConnection) {
+    try {
+      initializeDatabase();
+      console.log("Banco de dados SQLite inicializado com sucesso!");
+      
+      // Adicionar dados de exemplo
+      seedSampleData();
+    } catch (error) {
+      console.error("Erro ao inicializar banco de dados SQLite:", error);
+    }
   }
 
   const server = await registerRoutes(app);
