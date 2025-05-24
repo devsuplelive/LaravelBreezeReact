@@ -118,9 +118,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
     setRoles([]);
     setPermissions([]);
+    
+    // Redirecionar para a página de login
+    window.location.href = '/login';
+    
     toast({
-      title: 'Logged Out',
-      description: 'You have been successfully logged out.',
+      title: 'Saiu com Sucesso',
+      description: 'Você saiu do sistema com sucesso.',
     });
   };
 
